@@ -25,7 +25,15 @@ df['fechaAplicacionPago'] = df['fechaAplicacionPago'].astype(str)
 df['fechaAplicacionPago'] = pd.to_datetime(df['fechaAplicacionPago'], format='%d%m%Y').dt.strftime('%Y-%m-%d')
 
 
-abonos = ET.Element('{http://www.finagro.com.co/sit}abonos',cifraDeControl = nur)
+#abonos = ET.Element('{http://www.finagro.com.co/sit}abonos',cifraDeControl = nur)
+
+abonos = ET.Element('abonos', {
+    'xmlns:xs': 'http://www.w3.org/2001/XMLSchema',
+    'xmlns:ns1': 'http://www.itac.co/xp',
+    'targetNamespace': 'http://www.finagro.com.co/sit',
+    'cifraDeControl': nur
+})
+
 for i in range(Ni):
     tnp=df.iloc[i,0]
     cma=df.iloc[i,1]
@@ -54,12 +62,18 @@ for i in range(Ni):
 
     # if cma == "NEGOCIACIONES ESPECIALES":
     #     cma == str(11)
-
-    abono = ET.SubElement(abonos,'{http://www.finagro.com.co/sit}abono',tipoNovedadPago = tnp,codigoMotivoAbono = cma,fechaAplicacionPago=fap)
-    informacionObligacion = ET.SubElement(abono,'{http://www.finagro.com.co/sit}informacionObligacion',tipoCarteraId=tcid,codigoIntermediario=ci,numeroObligacion=no,tipoMonedaId=tmid)
-    ET.SubElement(informacionObligacion,'{http://www.finagro.com.co/sit}informacionBeneficiario',tipoDocumentoId=tdid,numeroDocumento=nd)
-    valorAbono = ET.SubElement(abono,'{http://www.finagro.com.co/sit}valorAbono')
-    ET.SubElement(valorAbono,'{http://www.finagro.com.co/sit}valorAbonoCapital',xmlns="").text=vac
+    if str(tnp) == '2':
+        abono = ET.SubElement(abonos,'{http://www.finagro.com.co/sit}abono',tipoNovedadPago = tnp,codigoMotivoAbono = cma,destinoAbono = da,fechaAplicacionPago=fap)
+        informacionObligacion = ET.SubElement(abono,'{http://www.finagro.com.co/sit}informacionObligacion',tipoCarteraId=tcid,codigoIntermediario=ci,numeroObligacion=no,tipoMonedaId=tmid)
+        ET.SubElement(informacionObligacion,'{http://www.finagro.com.co/sit}informacionBeneficiario',tipoDocumentoId=tdid,numeroDocumento=nd)
+        valorAbono = ET.SubElement(abono,'{http://www.finagro.com.co/sit}valorAbono')
+        ET.SubElement(valorAbono,'{http://www.finagro.com.co/sit}valorAbonoCapital',xmlns="").text=vac
+    else:
+        abono = ET.SubElement(abonos,'{http://www.finagro.com.co/sit}abono',tipoNovedadPago = tnp,codigoMotivoAbono = cma,fechaAplicacionPago=fap)
+        informacionObligacion = ET.SubElement(abono,'{http://www.finagro.com.co/sit}informacionObligacion',tipoCarteraId=tcid,codigoIntermediario=ci,numeroObligacion=no,tipoMonedaId=tmid)
+        ET.SubElement(informacionObligacion,'{http://www.finagro.com.co/sit}informacionBeneficiario',tipoDocumentoId=tdid,numeroDocumento=nd)
+        valorAbono = ET.SubElement(abono,'{http://www.finagro.com.co/sit}valorAbono')
+        ET.SubElement(valorAbono,'{http://www.finagro.com.co/sit}valorAbonoCapital',xmlns="").text=vac
     
 
 xml_str = ET.tostring(abonos, encoding='unicode')
