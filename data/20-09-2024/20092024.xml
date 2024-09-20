@@ -1,0 +1,235 @@
+<?xml version="1.0" ?>
+<obligaciones xmlns="http://www.finagro.com.co/sit" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" cifraDeControl="6" cifraDeControlValor="48300000">
+	<obligacion tipoCartera="2" programaCredito="732" tipoOperacion="1" tipoMoneda="1" tipoAgrupamiento="1" numeroPagare="34692942" numeroObligacionIntermediario="34692942" fechaSuscripcion="2024-09-13" fechaDesembolso="2024-09-13">
+		<intermediario oficinaPagare="41" oficinaObligacion="41" codigo="101030"/>
+		<beneficiarios cantidad="1">
+			<beneficiario correoElectronico="" cumpleCondicionesProductorAgrupacion="true" tipoAgrupacion="" tipoPersona="1" tipoProductor="94" actividadEconomica="160001">
+				<identificacion tipo="2" numeroIdentificacion="1048268326"/>
+				<nombre primerNombre="ERIKA" segundoNombre="PATRICIA" primerApellido="AYALA" segundoApellido="RODELO"/>
+				<direccionCorrespondencia direccion="R| CL 13 1 A 61" municipio="8433"/>
+				<numeroTelefono prefijo="" numero="0"/>
+				<valorActivos valor="76500000" fechaCorte="2024-09-09" tipoDato="COP"/>
+				<valorIngresos valor="5000000" fechaCorte="2023-12-31" tipoDato="COP"/>
+			</beneficiario>
+		</beneficiarios>
+		<proyecto fechaInicialEjecucion="2024-03-17" fechaFinalEjecucion="2025-09-08"/>
+		<predios>
+			<predio tipo="1" municipio="8433" direccion="R| CL 13 1 A 61"/>
+		</predios>
+		<destinosCredito>
+			<destinoCredito codigo="165000" unidadesAFinanciar="1" costoInversion="6000000">
+				<destinoCreditoValorAFinanciar>
+					<valorAFinanciar xmlns="">6000000</valorAFinanciar>
+				</destinoCreditoValorAFinanciar>
+			</destinoCredito>
+		</destinosCredito>
+		<financiacion fechaVencimientoFinal="2026-10-05" plazoCredito="25" valorTotalCredito="6000000" porcentaje="100" valorObligacion="6000000"/>
+		<planPagos>
+			<registroCuota registro="1" fechaAplicacionHasta="2024-10-05" conceptoRegistroCuota="K" periodicidadIntereses="PE" periodicidadCapital="PE" tasaBaseBeneficiario="5" margenTasaBeneficiario="24.26" valorCuotaCapital="240000" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+			<registroCuota registro="2" fechaAplicacionHasta="2026-10-05" conceptoRegistroCuota="K" periodicidadIntereses="MV" periodicidadCapital="MV" tasaBaseBeneficiario="5" margenTasaBeneficiario="24.26" valorCuotaCapital="240000" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+		</planPagos>
+	</obligacion>
+	<obligacion tipoCartera="2" programaCredito="732" tipoOperacion="1" tipoMoneda="1" tipoAgrupamiento="1" numeroPagare="34713866" numeroObligacionIntermediario="34713866" fechaSuscripcion="2024-09-13" fechaDesembolso="2024-09-13">
+		<intermediario oficinaPagare="41" oficinaObligacion="41" codigo="101030"/>
+		<beneficiarios cantidad="1">
+			<beneficiario correoElectronico="" cumpleCondicionesProductorAgrupacion="true" tipoAgrupacion="" tipoPersona="1" tipoProductor="94" actividadEconomica="160001">
+				<identificacion tipo="2" numeroIdentificacion="1073816774"/>
+				<nombre primerNombre="LEIDY" segundoNombre="JOHANNA" primerApellido="MONTOYA" segundoApellido="PESTANA"/>
+				<direccionCorrespondencia direccion="R| TV 21 16 106 LC 2" municipio="23162"/>
+				<numeroTelefono prefijo="" numero="0"/>
+				<valorActivos valor="9600000" fechaCorte="2024-09-11" tipoDato="COP"/>
+				<valorIngresos valor="9000000" fechaCorte="2023-12-31" tipoDato="COP"/>
+			</beneficiario>
+		</beneficiarios>
+		<proyecto fechaInicialEjecucion="2024-03-17" fechaFinalEjecucion="2025-09-08"/>
+		<predios>
+			<predio tipo="1" municipio="23162" direccion="R| TV 21 16 106 LC 2"/>
+		</predios>
+		<destinosCredito>
+			<destinoCredito codigo="165000" unidadesAFinanciar="1" costoInversion="4000000">
+				<destinoCreditoValorAFinanciar>
+					<valorAFinanciar xmlns="">4000000</valorAFinanciar>
+				</destinoCreditoValorAFinanciar>
+			</destinoCredito>
+		</destinosCredito>
+		<financiacion fechaVencimientoFinal="2026-02-05" plazoCredito="17" valorTotalCredito="4000000" porcentaje="100" valorObligacion="4000000"/>
+		<planPagos>
+			<registroCuota registro="1" fechaAplicacionHasta="2024-10-05" conceptoRegistroCuota="K" periodicidadIntereses="PE" periodicidadCapital="PE" tasaBaseBeneficiario="5" margenTasaBeneficiario="24.26" valorCuotaCapital="235296" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+			<registroCuota registro="2" fechaAplicacionHasta="2026-02-05" conceptoRegistroCuota="K" periodicidadIntereses="MV" periodicidadCapital="MV" tasaBaseBeneficiario="5" margenTasaBeneficiario="24.26" valorCuotaCapital="235294" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+		</planPagos>
+	</obligacion>
+	<obligacion tipoCartera="2" programaCredito="732" tipoOperacion="1" tipoMoneda="1" tipoAgrupamiento="1" numeroPagare="34716513" numeroObligacionIntermediario="34716513" fechaSuscripcion="2024-09-13" fechaDesembolso="2024-09-13">
+		<intermediario oficinaPagare="41" oficinaObligacion="41" codigo="101030"/>
+		<beneficiarios cantidad="1">
+			<beneficiario correoElectronico="" cumpleCondicionesProductorAgrupacion="true" tipoAgrupacion="" tipoPersona="1" tipoProductor="94" actividadEconomica="160001">
+				<identificacion tipo="2" numeroIdentificacion="11386799"/>
+				<nombre primerNombre="LUIS" segundoNombre="ALFONSO" primerApellido="SERRANO" segundoApellido="TRUJILLO"/>
+				<direccionCorrespondencia direccion="R| LT 18" municipio="25386"/>
+				<numeroTelefono prefijo="" numero="0"/>
+				<valorActivos valor="82400000" fechaCorte="2024-09-11" tipoDato="COP"/>
+				<valorIngresos valor="15000000" fechaCorte="2023-12-31" tipoDato="COP"/>
+			</beneficiario>
+		</beneficiarios>
+		<proyecto fechaInicialEjecucion="2024-03-17" fechaFinalEjecucion="2025-09-08"/>
+		<predios>
+			<predio tipo="1" municipio="25386" direccion="R| LT 18"/>
+		</predios>
+		<destinosCredito>
+			<destinoCredito codigo="165000" unidadesAFinanciar="1" costoInversion="5000000">
+				<destinoCreditoValorAFinanciar>
+					<valorAFinanciar xmlns="">5000000</valorAFinanciar>
+				</destinoCreditoValorAFinanciar>
+			</destinoCredito>
+		</destinosCredito>
+		<financiacion fechaVencimientoFinal="2026-10-10" plazoCredito="25" valorTotalCredito="5000000" porcentaje="100" valorObligacion="5000000"/>
+		<planPagos>
+			<registroCuota registro="1" fechaAplicacionHasta="2024-10-10" conceptoRegistroCuota="K" periodicidadIntereses="PE" periodicidadCapital="PE" tasaBaseBeneficiario="5" margenTasaBeneficiario="27.16" valorCuotaCapital="200000" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+			<registroCuota registro="2" fechaAplicacionHasta="2026-10-10" conceptoRegistroCuota="K" periodicidadIntereses="MV" periodicidadCapital="MV" tasaBaseBeneficiario="5" margenTasaBeneficiario="27.16" valorCuotaCapital="200000" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+		</planPagos>
+	</obligacion>
+	<obligacion tipoCartera="2" programaCredito="732" tipoOperacion="1" tipoMoneda="1" tipoAgrupamiento="1" numeroPagare="34722600" numeroObligacionIntermediario="34722600" fechaSuscripcion="2024-09-13" fechaDesembolso="2024-09-13">
+		<intermediario oficinaPagare="41" oficinaObligacion="41" codigo="101030"/>
+		<beneficiarios cantidad="1">
+			<beneficiario correoElectronico="" cumpleCondicionesProductorAgrupacion="true" tipoAgrupacion="" tipoPersona="1" tipoProductor="94" actividadEconomica="160001">
+				<identificacion tipo="2" numeroIdentificacion="1006434003"/>
+				<nombre primerNombre="CRISTIAN" segundoNombre="CAMILO" primerApellido="MARTINEZ" segundoApellido="RAMIREZ"/>
+				<direccionCorrespondencia direccion="R| CL 3 A SUR 7 36" municipio="76113"/>
+				<numeroTelefono prefijo="" numero="0"/>
+				<valorActivos valor="10000000" fechaCorte="2024-09-09" tipoDato="COP"/>
+				<valorIngresos valor="4500000" fechaCorte="2023-12-31" tipoDato="COP"/>
+			</beneficiario>
+		</beneficiarios>
+		<proyecto fechaInicialEjecucion="2024-03-17" fechaFinalEjecucion="2025-09-08"/>
+		<predios>
+			<predio tipo="1" municipio="76113" direccion="R| CL 3 A SUR 7 36"/>
+		</predios>
+		<destinosCredito>
+			<destinoCredito codigo="165000" unidadesAFinanciar="1" costoInversion="8000000">
+				<destinoCreditoValorAFinanciar>
+					<valorAFinanciar xmlns="">8000000</valorAFinanciar>
+				</destinoCreditoValorAFinanciar>
+			</destinoCredito>
+		</destinosCredito>
+		<financiacion fechaVencimientoFinal="2027-04-02" plazoCredito="31" valorTotalCredito="8000000" porcentaje="100" valorObligacion="8000000"/>
+		<planPagos>
+			<registroCuota registro="1" fechaAplicacionHasta="2024-10-02" conceptoRegistroCuota="K" periodicidadIntereses="PE" periodicidadCapital="PE" tasaBaseBeneficiario="5" margenTasaBeneficiario="22.03" valorCuotaCapital="258050" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+			<registroCuota registro="2" fechaAplicacionHasta="2027-04-02" conceptoRegistroCuota="K" periodicidadIntereses="MV" periodicidadCapital="MV" tasaBaseBeneficiario="5" margenTasaBeneficiario="22.03" valorCuotaCapital="258065" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+		</planPagos>
+	</obligacion>
+	<obligacion tipoCartera="2" programaCredito="732" tipoOperacion="1" tipoMoneda="1" tipoAgrupamiento="1" numeroPagare="34722748" numeroObligacionIntermediario="34722748" fechaSuscripcion="2024-09-13" fechaDesembolso="2024-09-13">
+		<intermediario oficinaPagare="41" oficinaObligacion="41" codigo="101030"/>
+		<beneficiarios cantidad="1">
+			<beneficiario correoElectronico="" cumpleCondicionesProductorAgrupacion="true" tipoAgrupacion="" tipoPersona="1" tipoProductor="94" actividadEconomica="160001">
+				<identificacion tipo="2" numeroIdentificacion="24717216"/>
+				<nombre primerNombre="YAMILE" segundoNombre="HERRERA" primerApellido="BALLESTEROS" segundoApellido=""/>
+				<direccionCorrespondencia direccion="R| KR 9 16 08 C" municipio="17380"/>
+				<numeroTelefono prefijo="" numero="0"/>
+				<valorActivos valor="15000000" fechaCorte="2024-09-11" tipoDato="COP"/>
+				<valorIngresos valor="14000000" fechaCorte="2023-12-31" tipoDato="COP"/>
+			</beneficiario>
+		</beneficiarios>
+		<proyecto fechaInicialEjecucion="2024-03-17" fechaFinalEjecucion="2025-09-08"/>
+		<predios>
+			<predio tipo="1" municipio="17380" direccion="R| KR 9 16 08 C"/>
+		</predios>
+		<destinosCredito>
+			<destinoCredito codigo="165000" unidadesAFinanciar="1" costoInversion="4800000">
+				<destinoCreditoValorAFinanciar>
+					<valorAFinanciar xmlns="">4800000</valorAFinanciar>
+				</destinoCreditoValorAFinanciar>
+			</destinoCredito>
+		</destinosCredito>
+		<financiacion fechaVencimientoFinal="2025-04-02" plazoCredito="7" valorTotalCredito="4800000" porcentaje="100" valorObligacion="4800000"/>
+		<planPagos>
+			<registroCuota registro="1" fechaAplicacionHasta="2024-10-02" conceptoRegistroCuota="K" periodicidadIntereses="PE" periodicidadCapital="PE" tasaBaseBeneficiario="5" margenTasaBeneficiario="24.26" valorCuotaCapital="685716" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+			<registroCuota registro="2" fechaAplicacionHasta="2025-04-02" conceptoRegistroCuota="K" periodicidadIntereses="MV" periodicidadCapital="MV" tasaBaseBeneficiario="5" margenTasaBeneficiario="24.26" valorCuotaCapital="685714" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+		</planPagos>
+	</obligacion>
+	<obligacion tipoCartera="2" programaCredito="732" tipoOperacion="1" tipoMoneda="1" tipoAgrupamiento="1" numeroPagare="34723343" numeroObligacionIntermediario="34723343" fechaSuscripcion="2024-09-13" fechaDesembolso="2024-09-13">
+		<intermediario oficinaPagare="41" oficinaObligacion="41" codigo="101030"/>
+		<beneficiarios cantidad="1">
+			<beneficiario correoElectronico="" cumpleCondicionesProductorAgrupacion="true" tipoAgrupacion="" tipoPersona="1" tipoProductor="94" actividadEconomica="160001">
+				<identificacion tipo="2" numeroIdentificacion="1085915870"/>
+				<nombre primerNombre="BRIYITH" segundoNombre="MARITZA" primerApellido="MINGAN" segundoApellido="ZAMBRANO"/>
+				<direccionCorrespondencia direccion="R| PREDIO B MINGAN" municipio="52356"/>
+				<numeroTelefono prefijo="" numero="0"/>
+				<valorActivos valor="17700000" fechaCorte="2024-09-12" tipoDato="COP"/>
+				<valorIngresos valor="19000000" fechaCorte="2023-12-31" tipoDato="COP"/>
+			</beneficiario>
+		</beneficiarios>
+		<proyecto fechaInicialEjecucion="2024-03-17" fechaFinalEjecucion="2025-09-08"/>
+		<predios>
+			<predio tipo="1" municipio="52356" direccion="R| PREDIO B MINGAN"/>
+		</predios>
+		<destinosCredito>
+			<destinoCredito codigo="165000" unidadesAFinanciar="1" costoInversion="10000000">
+				<destinoCreditoValorAFinanciar>
+					<valorAFinanciar xmlns="">10000000</valorAFinanciar>
+				</destinoCreditoValorAFinanciar>
+			</destinoCredito>
+		</destinosCredito>
+		<financiacion fechaVencimientoFinal="2026-10-05" plazoCredito="25" valorTotalCredito="10000000" porcentaje="100" valorObligacion="10000000"/>
+		<planPagos>
+			<registroCuota registro="1" fechaAplicacionHasta="2024-10-05" conceptoRegistroCuota="K" periodicidadIntereses="PE" periodicidadCapital="PE" tasaBaseBeneficiario="5" margenTasaBeneficiario="22.03" valorCuotaCapital="400000" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+			<registroCuota registro="2" fechaAplicacionHasta="2026-10-05" conceptoRegistroCuota="K" periodicidadIntereses="MV" periodicidadCapital="MV" tasaBaseBeneficiario="5" margenTasaBeneficiario="22.03" valorCuotaCapital="400000" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+		</planPagos>
+	</obligacion>
+	<obligacion tipoCartera="2" programaCredito="732" tipoOperacion="1" tipoMoneda="1" tipoAgrupamiento="1" numeroPagare="34724967" numeroObligacionIntermediario="34724967" fechaSuscripcion="2024-09-13" fechaDesembolso="2024-09-13">
+		<intermediario oficinaPagare="41" oficinaObligacion="41" codigo="101030"/>
+		<beneficiarios cantidad="1">
+			<beneficiario correoElectronico="" cumpleCondicionesProductorAgrupacion="true" tipoAgrupacion="" tipoPersona="1" tipoProductor="94" actividadEconomica="160001">
+				<identificacion tipo="2" numeroIdentificacion="19471369"/>
+				<nombre primerNombre="MIGUEL" segundoNombre="ANGEL" primerApellido="GONZALEZ" segundoApellido="ALVARADO"/>
+				<direccionCorrespondencia direccion="R| CL 1 9 19" municipio="73275"/>
+				<numeroTelefono prefijo="" numero="0"/>
+				<valorActivos valor="8800000" fechaCorte="2024-09-11" tipoDato="COP"/>
+				<valorIngresos valor="7000000" fechaCorte="2023-12-31" tipoDato="COP"/>
+			</beneficiario>
+		</beneficiarios>
+		<proyecto fechaInicialEjecucion="2024-03-17" fechaFinalEjecucion="2025-09-08"/>
+		<predios>
+			<predio tipo="1" municipio="73275" direccion="R| CL 1 9 19"/>
+		</predios>
+		<destinosCredito>
+			<destinoCredito codigo="165000" unidadesAFinanciar="1" costoInversion="2500000">
+				<destinoCreditoValorAFinanciar>
+					<valorAFinanciar xmlns="">2500000</valorAFinanciar>
+				</destinoCreditoValorAFinanciar>
+			</destinoCredito>
+		</destinosCredito>
+		<financiacion fechaVencimientoFinal="2025-10-12" plazoCredito="13" valorTotalCredito="2500000" porcentaje="100" valorObligacion="2500000"/>
+		<planPagos>
+			<registroCuota registro="1" fechaAplicacionHasta="2024-10-12" conceptoRegistroCuota="K" periodicidadIntereses="PE" periodicidadCapital="PE" tasaBaseBeneficiario="5" margenTasaBeneficiario="27.16" valorCuotaCapital="192304" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+			<registroCuota registro="2" fechaAplicacionHasta="2025-10-12" conceptoRegistroCuota="K" periodicidadIntereses="MV" periodicidadCapital="MV" tasaBaseBeneficiario="5" margenTasaBeneficiario="27.16" valorCuotaCapital="192308" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+		</planPagos>
+	</obligacion>
+	<obligacion tipoCartera="2" programaCredito="732" tipoOperacion="1" tipoMoneda="1" tipoAgrupamiento="1" numeroPagare="34728574" numeroObligacionIntermediario="34728574" fechaSuscripcion="2024-09-13" fechaDesembolso="2024-09-13">
+		<intermediario oficinaPagare="41" oficinaObligacion="41" codigo="101030"/>
+		<beneficiarios cantidad="1">
+			<beneficiario correoElectronico="" cumpleCondicionesProductorAgrupacion="true" tipoAgrupacion="" tipoPersona="1" tipoProductor="94" actividadEconomica="160001">
+				<identificacion tipo="2" numeroIdentificacion="1093740753"/>
+				<nombre primerNombre="LEIDY" segundoNombre="KATHERINE" primerApellido="GALINDO" segundoApellido="TRUJILLO"/>
+				<direccionCorrespondencia direccion="R| AV 8 KDX 111 4 C LLANITOS PATIOS" municipio="54405"/>
+				<numeroTelefono prefijo="" numero="0"/>
+				<valorActivos valor="10720000" fechaCorte="2024-09-12" tipoDato="COP"/>
+				<valorIngresos valor="7000000" fechaCorte="2023-12-31" tipoDato="COP"/>
+			</beneficiario>
+		</beneficiarios>
+		<proyecto fechaInicialEjecucion="2024-03-17" fechaFinalEjecucion="2025-09-08"/>
+		<predios>
+			<predio tipo="1" municipio="54405" direccion="R| AV 8 KDX 111 4 C LLANITOS PATIOS"/>
+		</predios>
+		<destinosCredito>
+			<destinoCredito codigo="165000" unidadesAFinanciar="1" costoInversion="8000000">
+				<destinoCreditoValorAFinanciar>
+					<valorAFinanciar xmlns="">8000000</valorAFinanciar>
+				</destinoCreditoValorAFinanciar>
+			</destinoCredito>
+		</destinosCredito>
+		<financiacion fechaVencimientoFinal="2026-10-06" plazoCredito="25" valorTotalCredito="8000000" porcentaje="100" valorObligacion="8000000"/>
+		<planPagos>
+			<registroCuota registro="1" fechaAplicacionHasta="2024-10-06" conceptoRegistroCuota="K" periodicidadIntereses="PE" periodicidadCapital="PE" tasaBaseBeneficiario="5" margenTasaBeneficiario="22.03" valorCuotaCapital="320000" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+			<registroCuota registro="2" fechaAplicacionHasta="2026-10-06" conceptoRegistroCuota="K" periodicidadIntereses="MV" periodicidadCapital="MV" tasaBaseBeneficiario="5" margenTasaBeneficiario="22.03" valorCuotaCapital="320000" porcentajeCapitalizacionIntereses="0" margenTasaRedescuento="0"/>
+		</planPagos>
+	</obligacion>
+</obligaciones>

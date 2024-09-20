@@ -11,7 +11,7 @@ from openpyxl import load_workbook
 import json
 from datetime import date
 import xlwings as xw
-
+import shutil
 
 col =['tipoCartera', 'programaCredito', 'tipoOperacion', 'tipoMoneda', 'tipoAgrupamiento', 'numeroPagare',
         'numeroObligacionIntermediario', 'fechaSuscripcion', 'fechaDesembolso', 'oficinaPagare', 'oficinaObligacion',
@@ -284,12 +284,14 @@ for i in range(Ni):
 #     f.write('<?xml version="1.0" encoding="UTF-8"?>' + xml.decode('utf-8'))
 
 xml_str = ET.tostring(Obligaciones, encoding='unicode')
-output = os.path.join('data', 'output2.xml')
+nombre_carpeta = datetime.today().strftime("%d-%m-%Y")
+nombre_archivo = datetime.today().strftime("%d%m%Y")
+ruta_carpeta = os.makedirs(f'./data/{nombre_carpeta}')
+output = os.path.join('data', nombre_carpeta , f'{nombre_archivo}.xml')
 with open(output, 'w', encoding='utf-8') as f:
     f.write('<?xml version="1.0" encoding="UTF-8"?>\n' + xml_str)
 
-
-
+    
 # Formatear el archivo XML con codificación UTF-8
 #file_path = r'C:\Users\arredondoivan\Downloads\Desarrollo Obligaciones Nuevas'
 def format_xml(file_path):
@@ -310,116 +312,118 @@ def format_xml(file_path):
 
 # Formatear el archivo de salida
 format_xml(output)
-ciiu = pd.read_excel(os.path.join('data', 'Ejemplo.xlsx'))
-ciiu = ciiu.astype('str')
-data_dict = ciiu.to_dict(orient='records')
+shutil.make_archive(f'./data/{nombre_carpeta}','zip','./data/',nombre_carpeta)
 
-wb = load_workbook(filename=archivo)
-hoja = wb['Hoja2']
-archivo_2= r'M:\Bancos\Banco Caja Social\Informes\INFORME CAJA SOCIAL CONSOLIDADO.xlsx'
-wb_informe = load_workbook(filename=archivo_2)
-hoja_informe = wb_informe['REGISTRO PARA INFORME  DIARIO ']
-archivo_3 = r'M:\Bancos\Banco Caja Social\Otros\PAF MICROCREDITO_CAJA SOCIAL.xlsx'
-wb_planificacion = load_workbook(filename=archivo_3)
-hoja_planificacion = wb_planificacion['FORMATO -PÁGINA 1 (1)']
-hoja_planificacion_2 = wb_planificacion['Hoja1']
+# ciiu = pd.read_excel(os.path.join('data', 'Ejemplo.xlsx'))
+# ciiu = ciiu.astype('str')
+# data_dict = ciiu.to_dict(orient='records')
 
-archivo_4 = os.path.join('data', 'Macro_organizacion_de_datos.xlsm')
-wb_macro = load_workbook(filename=archivo_4)
-hoja_macro = wb_macro['MICROCREDITO CAJA SOCIAL']
+# wb = load_workbook(filename=archivo)
+# hoja = wb['Hoja2']
+# archivo_2= r'M:\Bancos\Banco Caja Social\Informes\INFORME CAJA SOCIAL CONSOLIDADO.xlsx'
+# wb_informe = load_workbook(filename=archivo_2)
+# hoja_informe = wb_informe['REGISTRO PARA INFORME  DIARIO ']
+# archivo_3 = r'M:\Bancos\Banco Caja Social\Otros\PAF MICROCREDITO_CAJA SOCIAL.xlsx'
+# wb_planificacion = load_workbook(filename=archivo_3)
+# hoja_planificacion = wb_planificacion['FORMATO -PÁGINA 1 (1)']
+# hoja_planificacion_2 = wb_planificacion['Hoja1']
+
+# archivo_4 = os.path.join('data', 'Macro_organizacion_de_datos.xlsm')
+# wb_macro = load_workbook(filename=archivo_4)
+# hoja_macro = wb_macro['MICROCREDITO CAJA SOCIAL']
 
 
-for row in range(1, hoja_informe.max_row + 1):
-    if hoja_informe[f'A{row}'].value is not None:
-        ultima_fila_con_texto = row
+# for row in range(1, hoja_informe.max_row + 1):
+#     if hoja_informe[f'A{row}'].value is not None:
+#         ultima_fila_con_texto = row
     
-fecha = datetime.now()
-fecha_formateada = fecha.strftime('%d-%m-%Y')
-fecha_ayer = fecha - timedelta(days=1)
-iterador = int((hoja.max_row)/2)
-nur = int(nur)
-for i in range(1,nur+1):
-    wb_planificacion = load_workbook(filename=archivo_3)
-    hoja_planificacion = wb_planificacion['FORMATO -PÁGINA 1 (1)']
-    hoja_planificacion_2 = wb_planificacion['Hoja1']
-    hoja_informe[f'A{ultima_fila_con_texto + i}'] = 'REGISTRADO'
-    hoja_informe[f'B{ultima_fila_con_texto + i}'] = 'BANCO CAJA SOCIAL'
-    hoja_informe[f'C{ultima_fila_con_texto + i}'] = hoja[f'U{i}'].value
-    Nombre = '\PAFF CAJA SOCIAL_' + str(hoja[f'U{i}'].value) + '.xlsx'
-    ruta = 'M:\Bancos\Banco Caja Social\Otros\Proyectos'+ Nombre
-    hoja_planificacion['O9'] = hoja[f'U{i}'].value
-    hoja_informe[f'AS{ultima_fila_con_texto + i}'] = hoja_macro[f'E{i + 1}'].value
-    hoja_planificacion_2['A1'] = hoja_macro[f'E{i + 1}'].value
-    cod_ciiu = str(hoja_macro[f'E{i + 1}'].value)
+# fecha = datetime.now()
+# fecha_formateada = fecha.strftime('%d-%m-%Y')
+# fecha_ayer = fecha - timedelta(days=1)
+# iterador = int((hoja.max_row)/2)
+# nur = int(nur)
+# for i in range(1,nur+1):
+#     wb_planificacion = load_workbook(filename=archivo_3)
+#     hoja_planificacion = wb_planificacion['FORMATO -PÁGINA 1 (1)']
+#     hoja_planificacion_2 = wb_planificacion['Hoja1']
+#     hoja_informe[f'A{ultima_fila_con_texto + i}'] = 'REGISTRADO'
+#     hoja_informe[f'B{ultima_fila_con_texto + i}'] = 'BANCO CAJA SOCIAL'
+#     hoja_informe[f'C{ultima_fila_con_texto + i}'] = hoja[f'U{i}'].value
+#     Nombre = '\PAFF CAJA SOCIAL_' + str(hoja[f'U{i}'].value) + '.xlsx'
+#     ruta = 'M:\Bancos\Banco Caja Social\Otros\Proyectos'+ Nombre
+#     hoja_planificacion['O9'] = hoja[f'U{i}'].value
+#     hoja_informe[f'AS{ultima_fila_con_texto + i}'] = hoja_macro[f'E{i + 1}'].value
+#     hoja_planificacion_2['A1'] = hoja_macro[f'E{i + 1}'].value
+#     cod_ciiu = str(hoja_macro[f'E{i + 1}'].value)
 
-    descripcion = None
-    for item in data_dict:
-        if item['Codigo'] == cod_ciiu:
-            descripcion = item['Descripción']
-            break
+#     descripcion = None
+#     for item in data_dict:
+#         if item['Codigo'] == cod_ciiu:
+#             descripcion = item['Descripción']
+#             break
 
-    for j in range(3):  
-        valores = []
-        for letra in ['W', 'X', 'Y', 'Z']:  
-            valor = hoja[f'{letra}{i}'].value
-            if valor is None:
-                valor = ''  
-            valores.append(str(valor))
+#     for j in range(3):  
+#         valores = []
+#         for letra in ['W', 'X', 'Y', 'Z']:  
+#             valor = hoja[f'{letra}{i}'].value
+#             if valor is None:
+#                 valor = ''  
+#             valores.append(str(valor))
 
-    justificacion = str('El objeto social de '+ ' '.join(valores)) + 'es ' + str(descripcion) 
-    hoja_planificacion['C42'] = justificacion
-    hoja_planificacion['C48'] = 'Los recursos de este proyecto serán utilizados en el crubrimiento de los costos y gastos relacionados con la ejecución del objeto social del cliente, principalmente ' + str(descripcion) 
-    hoja_informe[f'D{ultima_fila_con_texto + i}'].value = ' '.join(valores)
-    hoja_planificacion['C8'] = ' '.join(valores)
-    hoja_informe[f'E{ultima_fila_con_texto + i}'] = hoja[f'AB{i}'].value
-    hoja_planificacion['C10'] = hoja[f'AB{i}'].value
-    #hoja_informe[f'F{ultima_fila_con_texto + i}'] = hoja[f'AC{i}'].value
-    #hoja_planificacion['J10'] = hoja[f'AC{i}'].value
-    hoja_informe[f'F{ultima_fila_con_texto + i}'] = str(hoja_macro[f'G{i + 1}'].value).upper()
-    hoja_informe[f'G{ultima_fila_con_texto + i}'] = str(hoja_macro[f'I{i + 1}'].value).upper()
-    hoja_planificacion['J10'] = str(hoja_macro[f'G{i + 1}'].value).upper()
-    hoja_planificacion['K10'] = str(hoja_macro[f'I{i + 1}'].value).upper()
-    hoja_informe[f'H{ultima_fila_con_texto + i}'] = hoja[f'AG{i}'].value
-    hoja_informe[f'I{ultima_fila_con_texto + i}'] = hoja[f'AF{i}'].value
-    hoja_planificacion['M14'] = hoja[f'AF{i}'].value 
-    hoja_informe[f'J{ultima_fila_con_texto + i}'] = fecha_formateada
-    hoja_informe[f'K{ultima_fila_con_texto + i}'] = fecha_ayer
-    hoja_informe[f'L{ultima_fila_con_texto + i}'] = hoja[f'AP{i}'].value
-    hoja_planificacion['J61'] = hoja[f'AP{i}'].value
-    hoja_planificacion['K61'] = hoja[f'AP{i}'].value
-    hoja_informe[f'M{ultima_fila_con_texto + i}'] = hoja[f'AP{i}'].value
-    hoja_informe[f'N{ultima_fila_con_texto + i}'] = hoja[f'AR{i}'].value
-    hoja_planificacion['M61'] = hoja[f'AR{i}'].value
-    hoja_informe[f'O{ultima_fila_con_texto + i}'] = 'MES VENCIDO'
-    hoja_informe[f'P{ultima_fila_con_texto + i}'] = 'MES VENCIDO'
-    hoja_informe[f'Q{ultima_fila_con_texto + i}'] = hoja[f'BB{i}'].value
-    hoja_planificacion['R61'] = hoja[f'BB{i}'].value
-    if hoja[f'R{i}'].value == '11':
-        hoja_informe[f'R{ultima_fila_con_texto + i}'] = 'MICROEMPRESARIO'
-    else:
-        hoja_informe[f'R{ultima_fila_con_texto + i}'] = 'MICROEMPRESARIO PPIB'
+#     justificacion = str('El objeto social de '+ ' '.join(valores)) + 'es ' + str(descripcion) 
+#     hoja_planificacion['C42'] = justificacion
+#     hoja_planificacion['C48'] = 'Los recursos de este proyecto serán utilizados en el crubrimiento de los costos y gastos relacionados con la ejecución del objeto social del cliente, principalmente ' + str(descripcion) 
+#     hoja_informe[f'D{ultima_fila_con_texto + i}'].value = ' '.join(valores)
+#     hoja_planificacion['C8'] = ' '.join(valores)
+#     hoja_informe[f'E{ultima_fila_con_texto + i}'] = hoja[f'AB{i}'].value
+#     hoja_planificacion['C10'] = hoja[f'AB{i}'].value
+#     #hoja_informe[f'F{ultima_fila_con_texto + i}'] = hoja[f'AC{i}'].value
+#     #hoja_planificacion['J10'] = hoja[f'AC{i}'].value
+#     hoja_informe[f'F{ultima_fila_con_texto + i}'] = str(hoja_macro[f'G{i + 1}'].value).upper()
+#     hoja_informe[f'G{ultima_fila_con_texto + i}'] = str(hoja_macro[f'I{i + 1}'].value).upper()
+#     hoja_planificacion['J10'] = str(hoja_macro[f'G{i + 1}'].value).upper()
+#     hoja_planificacion['K10'] = str(hoja_macro[f'I{i + 1}'].value).upper()
+#     hoja_informe[f'H{ultima_fila_con_texto + i}'] = hoja[f'AG{i}'].value
+#     hoja_informe[f'I{ultima_fila_con_texto + i}'] = hoja[f'AF{i}'].value
+#     hoja_planificacion['M14'] = hoja[f'AF{i}'].value 
+#     hoja_informe[f'J{ultima_fila_con_texto + i}'] = fecha_formateada
+#     hoja_informe[f'K{ultima_fila_con_texto + i}'] = fecha_ayer
+#     hoja_informe[f'L{ultima_fila_con_texto + i}'] = hoja[f'AP{i}'].value
+#     hoja_planificacion['J61'] = hoja[f'AP{i}'].value
+#     hoja_planificacion['K61'] = hoja[f'AP{i}'].value
+#     hoja_informe[f'M{ultima_fila_con_texto + i}'] = hoja[f'AP{i}'].value
+#     hoja_informe[f'N{ultima_fila_con_texto + i}'] = hoja[f'AR{i}'].value
+#     hoja_planificacion['M61'] = hoja[f'AR{i}'].value
+#     hoja_informe[f'O{ultima_fila_con_texto + i}'] = 'MES VENCIDO'
+#     hoja_informe[f'P{ultima_fila_con_texto + i}'] = 'MES VENCIDO'
+#     hoja_informe[f'Q{ultima_fila_con_texto + i}'] = hoja[f'BB{i}'].value
+#     hoja_planificacion['R61'] = hoja[f'BB{i}'].value
+#     if hoja[f'R{i}'].value == '11':
+#         hoja_informe[f'R{ultima_fila_con_texto + i}'] = 'MICROEMPRESARIO'
+#     else:
+#         hoja_informe[f'R{ultima_fila_con_texto + i}'] = 'MICROEMPRESARIO PPIB'
 
-    hoja_informe[f'AQ{ultima_fila_con_texto + i}'] = hoja[f'F{i}'].value
-    hoja_informe[f'AV{ultima_fila_con_texto + i}'] = hoja[f'BF{i}'].value
-    hoja_planificacion['H14'] = hoja[f'BF{i}'].value
-    hoja_planificacion['N2'] = hoja[f'G{i}'].value
+#     hoja_informe[f'AQ{ultima_fila_con_texto + i}'] = hoja[f'F{i}'].value
+#     hoja_informe[f'AV{ultima_fila_con_texto + i}'] = hoja[f'BF{i}'].value
+#     hoja_planificacion['H14'] = hoja[f'BF{i}'].value
+#     hoja_planificacion['N2'] = hoja[f'G{i}'].value
 
-    wb = xw.Book(archivo_4)
-    hoja_macro = wb.sheets['MICROCREDITO CAJA SOCIAL']
-    valor_ingreso = hoja_macro.range(f'AT{i+1}').value
-    wb_macro = load_workbook(filename=archivo_4)
-    hoja_macro = wb_macro['MICROCREDITO CAJA SOCIAL']
-    hoja_planificacion['H13'] = 'Monto de Ingresos ' + valor_ingreso
-    wb = xw.Book(archivo_4)
-    hoja_macro = wb.sheets['MICROCREDITO CAJA SOCIAL']
-    valor_ingreso = hoja_macro.range(f'AQ{i+1}').value
-    wb_macro = load_workbook(filename=archivo_4)
-    hoja_macro = wb_macro['MICROCREDITO CAJA SOCIAL']
-    hoja_planificacion['M13'] = 'Monto de Activos ' + valor_ingreso
+#     wb = xw.Book(archivo_4)
+#     hoja_macro = wb.sheets['MICROCREDITO CAJA SOCIAL']
+#     valor_ingreso = hoja_macro.range(f'AT{i+1}').value
+#     wb_macro = load_workbook(filename=archivo_4)
+#     hoja_macro = wb_macro['MICROCREDITO CAJA SOCIAL']
+#     hoja_planificacion['H13'] = 'Monto de Ingresos ' + valor_ingreso
+#     wb = xw.Book(archivo_4)
+#     hoja_macro = wb.sheets['MICROCREDITO CAJA SOCIAL']
+#     valor_ingreso = hoja_macro.range(f'AQ{i+1}').value
+#     wb_macro = load_workbook(filename=archivo_4)
+#     hoja_macro = wb_macro['MICROCREDITO CAJA SOCIAL']
+#     hoja_planificacion['M13'] = 'Monto de Activos ' + valor_ingreso
     
-    wb_planificacion.save(filename=ruta)
+#     wb_planificacion.save(filename=ruta)
 
 
-wb_informe.save(filename=archivo_2)
-wb_macro.close()
+# wb_informe.save(filename=archivo_2)
+# wb_macro.close()
 print('PROCESO FINALIZADO SATISFACTORIAMENTE !!!')
