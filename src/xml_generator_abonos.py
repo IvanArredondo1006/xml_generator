@@ -62,6 +62,15 @@ for i in range(Ni):
 
     # if cma == "NEGOCIACIONES ESPECIALES":
     #     cma == str(11)
+    if tnp == '2':
+        if cma == 'NORMAL':
+            cma = '11'
+    if tnp == '1':
+        if cma == 'NORMAL' or 'RETANQUEO':
+            cma = '21'
+        elif cma == 'ILICITOS' or 'DESESTIMIENTO':
+            cma = '9'
+        
     if str(tnp) == '2':
         abono = ET.SubElement(abonos,'{http://www.finagro.com.co/sit}abono',tipoNovedadPago = tnp,codigoMotivoAbono = cma,destinoAbono = da,fechaAplicacionPago=fap)
         informacionObligacion = ET.SubElement(abono,'{http://www.finagro.com.co/sit}informacionObligacion',tipoCarteraId=tcid,codigoIntermediario=ci,numeroObligacion=no,tipoMonedaId=tmid)

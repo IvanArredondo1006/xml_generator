@@ -27,7 +27,8 @@ col =['tipoCartera', 'programaCredito', 'tipoOperacion', 'tipoMoneda', 'tipoAgru
 
 
 archivo = os.path.join('data', 'Prueba2.xlsx')
-tabla=pd.read_excel(archivo,names=col,index_col=False)
+tabla=pd.read_excel(archivo,names=col,index_col=False,
+                    dtype= {'numeroPagare': str})
 #print(tabla)
 #registros=pd.read_excel(archivo,names=col,index_col=False,sheet_name='Hoja3')
 
@@ -313,6 +314,8 @@ def format_xml(file_path):
 # Formatear el archivo de salida
 format_xml(output)
 shutil.make_archive(f'./data/{nombre_carpeta}','zip','./data/',nombre_carpeta)
+print('Carga masiva finalizada')
+print('Iniciando generacion de proyectos...')
 
 # ciiu = pd.read_excel(os.path.join('data', 'Ejemplo.xlsx'))
 # ciiu = ciiu.astype('str')
@@ -426,4 +429,4 @@ shutil.make_archive(f'./data/{nombre_carpeta}','zip','./data/',nombre_carpeta)
 
 # wb_informe.save(filename=archivo_2)
 # wb_macro.close()
-print('PROCESO FINALIZADO SATISFACTORIAMENTE !!!')
+print('Proyectos generados satisfactoriamente')
