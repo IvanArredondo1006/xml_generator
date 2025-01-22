@@ -17,10 +17,53 @@ import io
 import zipfile
 
 
-def format_xml(xml_string):
-    """Formatea una cadena XML para que sea más legible."""
-    xml_dom = xml.dom.minidom.parseString(xml_string)  # Parsear la cadena XML
-    return xml_dom.toprettyxml(indent="  ")  # Devolver la cadena formateada
+def format_xml(xml_str):
+
+
+    # Usar minidom para parsear el contenido del archivo
+    xml_doc = xml.dom.minidom.parseString(xml_str)
+
+    # Formatear el contenido del archivo
+    pretty_xml_str = xml_doc.toprettyxml()
+
+    return pretty_xml_str
+# Función para asegurar el formato yyyy-mm-dd
+def asegurar_formato_fecha(fecha):
+    try:
+        # Intenta convertir la fecha al formato yyyy-mm-dd
+        return datetime.strptime(fecha, '%Y-%m-%d').strftime('%Y-%m-%d')
+    except ValueError:
+        try:
+            # Si falla, intenta detectar el formato automáticamente
+            return pd.to_datetime(fecha, errors='coerce').strftime('%Y-%m-%d')
+        except Exception:
+            # Si no se puede convertir, devuelve NaN
+            return None
+        
+def convertir_fecha_a_formato(fecha_str):
+    """
+    Convierte una fecha en formato str (dd-mm-yyyy o dd-m-yyyy)
+    al formato str yyyy-mm-dd.
+
+    Args:
+        fecha_str (str): Fecha en formato dd-mm-yyyy o dd-m-yyyy.
+
+    Returns:
+        str: Fecha en formato yyyy-mm-dd o None si no se puede convertir.
+    """
+    try:
+        # Intentar convertir usando formato dd-mm-yyyy
+        fecha = datetime.strptime(fecha_str, '%d-%m-%Y')
+    except ValueError:
+        try:
+            # Intentar convertir usando formato dd-m-yyyy
+            fecha = datetime.strptime(fecha_str, '%d-%m-%Y')
+        except ValueError:
+            # Si no se puede convertir, devolver None
+            return None
+
+    # Devolver la fecha en formato yyyy-mm-dd
+    return fecha.strftime('%Y-%m-%d')
 
 
 def procesar_excel(file, num_operaciones):
@@ -38,29 +81,61 @@ def procesar_excel(file, num_operaciones):
             'plazoFinanciacion','numeroProyecto','numeroDesembolso','desembolsos']
 
 
-    archivo = os.path.join('data', 'Prueba2.xlsx')
-    tabla=pd.read_excel(archivo,names=col,index_col=False,
-                        dtype= {'numeroPagare': str})
+    #archivo = os.path.join('data', 'Prueba2.xlsx')
+    tabla=pd.read_excel(file,names=col,dtype={
+        
+        'numeroObligacionIntermediario':str,
+        'numeroPagare':str,
+        'fechaSuscripcion': str,
+        'fechaDesembolso': str,
+        'fechaCorte': str,
+        'fechaInicialEjecucion': str,
+        'fechaFinalEjecucion': str,
+        'fechaAplicacionHasta': str,
+        'fechaVencimientoFinal': str,
+    
+    }
+    ,index_col=False)
+    print(tabla['fechaAplicacionHasta'].head())
     #print(tabla)
     #registros=pd.read_excel(archivo,names=col,index_col=False,sheet_name='Hoja3')
 
 
     tabla.fillna("", inplace=True)
     #abla["tipoCartera"] = tabla["tipoCartera"].astype(float)
-    tabla['fechaSuscripcion']=tabla['fechaSuscripcion'].astype(str)
-    tabla['fechaSuscripcion'] = tabla['fechaSuscripcion'].str.replace('/', '-')
-    tabla['fechaDesembolso']=tabla['fechaDesembolso'].astype(str)
-    tabla['fechaDesembolso'] = tabla['fechaDesembolso'].str.replace('/', '-')
-    tabla['fechaCorte']= tabla['fechaCorte'].astype(str)
-    tabla['fechaCorte'] = tabla['fechaCorte'].str.replace('/', '-')
-    tabla['fechaInicialEjecucion']=tabla['fechaInicialEjecucion'].astype(str)
-    tabla['fechaInicialEjecucion'] = tabla['fechaInicialEjecucion'].str.replace('/', '-')
-    tabla['fechaFinalEjecucion']=tabla['fechaFinalEjecucion'].astype(str)
-    tabla['fechaFinalEjecucion'] = tabla['fechaFinalEjecucion'].str.replace('/', '-')
-    tabla['fechaAplicacionHasta']=tabla['fechaAplicacionHasta'].astype(str)
+    # tabla['fechaSuscripcion']=tabla['fechaSuscripcion'].astype(str)
+    # tabla['fechaSuscripcion'] = tabla['fechaSuscripcion'].str.replace('/', '-')
+    # tabla['fechaDesembolso']=tabla['fechaDesembolso'].astype(str)
+    # tabla['fechaDesembolso'] = tabla['fechaDesembolso'].str.replace('/', '-')
+    # tabla['fechaCorte']= tabla['fechaCorte'].astype(str)
+    # tabla['fechaCorte'] = tabla['fechaCorte'].str.replace('/', '-')
+    # tabla['fechaInicialEjecucion']=tabla['fechaInicialEjecucion'].astype(str)
+    # tabla['fechaInicialEjecucion'] = tabla['fechaInicialEjecucion'].str.replace('/', '-')
+    # tabla['fechaFinalEjecucion']=tabla['fechaFinalEjecucion'].astype(str)
+    # tabla['fechaFinalEjecucion'] = tabla['fechaFinalEjecucion'].str.replace('/', '-')
+    # tabla['fechaAplicacionHasta']=tabla['fechaAplicacionHasta'].astype(str)
     tabla['fechaAplicacionHasta'] = tabla['fechaAplicacionHasta'].str.replace('/', '-')
-    tabla['fechaVencimientoFinal']=tabla['fechaVencimientoFinal'].astype(str)
+    # tabla['fechaVencimientoFinal']=tabla['fechaVencimientoFinal'].astype(str)
     tabla['fechaVencimientoFinal'] = tabla['fechaVencimientoFinal'].str.replace('/', '-')
+
+        # Lista de columnas de fechas
+    columnas_fechas = [
+        'fechaSuscripcion', 'fechaDesembolso', 'fechaCorte',
+        'fechaInicialEjecucion', 'fechaFinalEjecucion',
+    ]
+
+    # Procesar cada columna de fechas
+    for col in columnas_fechas:
+        if col in tabla.columns:
+            # Convertir cada valor de la columna al formato yyyy-mm-dd
+            tabla[col] = tabla[col].astype(str).apply(asegurar_formato_fecha)
+
+    # Aplicar la función a las columnas relevantes
+    date_columns = ['fechaAplicacionHasta', 'fechaVencimientoFinal']
+
+    for column in date_columns:
+        tabla[column] = tabla[column].apply(convertir_fecha_a_formato)
+
 
     tabla['PrimerNombre'] = tabla['PrimerNombre'].str.replace('Ð', 'Ñ')
     tabla['SegundoNombre'] = tabla['SegundoNombre'].str.replace('Ð', 'Ñ')
@@ -103,7 +178,8 @@ def procesar_excel(file, num_operaciones):
     #Obligaciones=ET.Element('{http://www.finagro.com.co/sit}obligaciones',cifraDeControlValor=vtotal,cifraDeControl=nur)
     #Obligaciones=ET.Element('{http://www.w3.org/2001/XMLSchema}obligaciones',cifraDeControlValor=vtotal,cifraDeControl=nur)
     Ni = len(tabla['tipoCartera'])
-    #print(tabla)
+    fechas_ok = 0
+    fechas_no_concuerdan = 0
 
     for i in range(Ni):
 
@@ -290,6 +366,21 @@ def procesar_excel(file, num_operaciones):
         #         ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}numeroTelefono', prefijo=pref, numero=num)
         #         ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}valorActivos', valor=va, fechaCorte=fc)
         #
+        if fah[:-2] ==  fvf[:-2]:
+            fechas_ok += 1
+        else:
+            fechas_no_concuerdan +=1
+
+        # elif >= 2:
+        #     type(str(can))
+        #     for j in range(len(can)):
+        #         beneficiario=ET.SubElement(beneficiarios,'{http://www.finagro.com.co/sit}beneficiario', correoElectronico=email,cumpleCondicionesProductorAgrupacion="true", tipoAgrupacion=ta2, tipoPersona=tp, tipoProductor=tpr, actividadEconomica=ae)
+        #         ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}identificacion', tipo=tipo, numeroIdentificacion=id, digitoVerificacion=dv)
+        #         ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}nombre', primerNombre=pn, segundoNombre=sn, primerApellido=pa, segundoApellido=sa, Razonsocial=rs)
+        #         ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}direccionCorrespondencia', direccion=dir, municipio=mun)
+        #         ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}numeroTelefono', prefijo=pref, numero=num)
+        #         ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}valorActivos', valor=va, fechaCorte=fc)
+        #
 
     # xml = ET.tostring(Obligaciones)  # binary string
     # #my_arr=xml.decode()
@@ -366,7 +457,7 @@ def procesar_excel(file, num_operaciones):
     #         valores = []
     #         for letra in ['W', 'X', 'Y', 'Z']:  
     #             valor = hoja[f'{letra}{i}'].value
-    #             if valor is None:
+    #             if valor is None:   
     #                 valor = ''  
     #             valores.append(str(valor))
 
