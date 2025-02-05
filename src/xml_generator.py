@@ -86,8 +86,8 @@ def procesar_excel(file, num_operaciones):
         
         'numeroObligacionIntermediario':str,
         'numeroPagare':str,
-        'fechaSuscripcion': str,
-        'fechaDesembolso': str,
+        # 'fechaSuscripcion': str,
+        # 'fechaDesembolso': str,
         'fechaCorte': str,
         'fechaInicialEjecucion': str,
         'fechaFinalEjecucion': str,
@@ -120,7 +120,7 @@ def procesar_excel(file, num_operaciones):
 
         # Lista de columnas de fechas
     columnas_fechas = [
-        'fechaSuscripcion', 'fechaDesembolso', 'fechaCorte',
+        'fechaCorte',
         'fechaInicialEjecucion', 'fechaFinalEjecucion',
     ]
 
