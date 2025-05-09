@@ -1,187 +1,174 @@
-import xml.etree.ElementTree as ET
-import pandas as pd
-import numpy as np
-import os
-from datetime import datetime,timedelta
-from bs4 import BeautifulSoup
-import lxml.etree as etree
-import xml.dom.minidom
-from xml.dom.minidom import parse
-from openpyxl import load_workbook
-import json
-from datetime import date
-import xlwings as xw
-import shutil
 import streamlit as st
+import pandas as pd
 import io
 import zipfile
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
+import numpy as np
 
+# -------------------------------------
+# FUNCIONES AUXILIARES
+# -------------------------------------
+
+def convertir_a_formato_yyyy_mm_dd(fecha):
+    try:
+        return datetime.strptime(str(fecha), "%Y-%m-%d").strftime("%Y-%m-%d")
+    except ValueError:
+        try:
+            return datetime.strptime(str(fecha), "%d-%m-%Y").strftime("%Y-%m-%d")
+        except ValueError:
+            try:
+                return pd.to_datetime(fecha, errors='coerce').strftime("%Y-%m-%d")
+            except:
+                return ""
+
+def calcular_fecha_aplicabilidad(fecha_final):
+    hoy = datetime.today()
+    dia_final = fecha_final.day
+    mes = hoy.month + 1 if (hoy.day + 6 > dia_final) else hoy.month
+    anio = hoy.year + 1 if mes == 1 and hoy.month == 12 else hoy.year
+    return f"{anio}-{mes:02d}-{dia_final:02d}"
 
 def format_xml(xml_str):
+    return xml.dom.minidom.parseString(xml_str).toprettyxml()
 
+# -------------------------------------
+# PASO 1 - macro_excel
+# -------------------------------------
 
-    # Usar minidom para parsear el contenido del archivo
-    xml_doc = xml.dom.minidom.parseString(xml_str)
-
-    # Formatear el contenido del archivo
-    pretty_xml_str = xml_doc.toprettyxml()
-
-    return pretty_xml_str
-# Función para asegurar el formato yyyy-mm-dd
-def asegurar_formato_fecha(fecha):
-    try:
-        # Intenta convertir la fecha al formato yyyy-mm-dd
-        return datetime.strptime(fecha, '%Y-%m-%d').strftime('%Y-%m-%d')
-    except ValueError:
-        try:
-            # Si falla, intenta detectar el formato automáticamente
-            return pd.to_datetime(fecha, errors='coerce').strftime('%Y-%m-%d')
-        except Exception:
-            # Si no se puede convertir, devuelve NaN
-            return None
-        
-def convertir_fecha_a_formato(fecha_str):
-    """
-    Convierte una fecha en formato str (dd-mm-yyyy o dd-m-yyyy)
-    al formato str yyyy-mm-dd.
-
-    Args:
-        fecha_str (str): Fecha en formato dd-mm-yyyy o dd-m-yyyy.
-
-    Returns:
-        str: Fecha en formato yyyy-mm-dd o None si no se puede convertir.
-    """
-    try:
-        # Intentar convertir usando formato dd-mm-yyyy
-        fecha = datetime.strptime(fecha_str, '%d-%m-%Y')
-    except ValueError:
-        try:
-            # Intentar convertir usando formato dd-m-yyyy
-            fecha = datetime.strptime(fecha_str, '%d-%m-%Y')
-        except ValueError:
-            # Si no se puede convertir, devolver None
-            return None
-
-    # Devolver la fecha en formato yyyy-mm-dd
-    return fecha.strftime('%Y-%m-%d')
-
-
-def procesar_excel(file, num_operaciones):
-
-    col =['tipoCartera', 'programaCredito', 'tipoOperacion', 'tipoMoneda', 'tipoAgrupamiento', 'numeroPagare',
-            'numeroObligacionIntermediario', 'fechaSuscripcion', 'fechaDesembolso', 'oficinaPagare', 'oficinaObligacion',
-            'codigo', 'cantidad', 'correoElectronico','cumpleCondicionesProductorAgrupacion', 'tipoAgrupacion', 'tipoPersona',
-            'tipoProductor', 'actividadEconomica', 'tipo', 'numeroIdentificacion', 'digitoVerificacion', 'primerApellido',
-            'SegundoApellido', 'PrimerNombre', 'SegundoNombre', 'Razonsocial', 'direccion', 'municipio', 'prefijo',
-            'numero', 'valor', 'fechaCorte', 'fechaInicialEjecucion', 'fechaFinalEjecucion', 'tipo2', 'municipio2', 'direccion2',
-            'codigo2', 'unidadesAFinanciar', 'costoInversion', 'valorAFinanciar', 'fechaVencimientoFinal', 'plazoCredito',
-            'valorTotalCredito', 'porcentaje', 'valorObligacion', 'registro', 'fechaAplicacionHasta', 'conceptoRegistroCuota',
-            'periodicidadIntereses', 'periodicidadCapital', 'tasaBaseBeneficiario', 'margenTasaBeneficiario', 'valorCuotaCapital',
-            'porcentajeCapitalizacionIntereses', 'margenTasaRedescuento','valorIngresos','Anticipo','valorTotalProyecto','valorTotalAFinanciar',
-            'plazoFinanciacion','numeroProyecto','numeroDesembolso','desembolsos']
-
-
-    #archivo = os.path.join('data', 'Prueba2.xlsx')
-    tabla=pd.read_excel(file,names=col,dtype={
-        
-        'numeroObligacionIntermediario':str,
-        'numeroPagare':str,
-        # 'fechaSuscripcion': str,
-        # 'fechaDesembolso': str,
-        'fechaCorte': str,
-        'fechaInicialEjecucion': str,
-        'fechaFinalEjecucion': str,
-        'fechaAplicacionHasta': str,
-        'fechaVencimientoFinal': str,
+def macro_excel(archivo, banco):
+    col = ['IDENTIFICACION', 'NOMBRE COMPLETO', 'CODIGO MUN', 'MONTO INGRESOS', 'MONTO ACTIVOS',
+           'VALOR DESEMBOLSADO', 'SALDO A CAPITAL DEL CREDITO', 'FECHA INICIAL DEL CREDITO', 'FECHA FINAL CREDITO',
+           'AMORTIZACION', 'TASA FINAL', 'DIRECCION', 'TELEFONO', 'PAGARE', 'TIPO PRODUCTOR']
     
-    }
-    ,index_col=False)
-    print(tabla['fechaAplicacionHasta'].head())
-    #print(tabla)
-    #registros=pd.read_excel(archivo,names=col,index_col=False,sheet_name='Hoja3')
+    df = pd.read_excel(archivo, names=col, header=0).fillna("")
+    df['saldoCapitalCredito'] = np.ceil(df['SALDO A CAPITAL DEL CREDITO'].astype(float)).astype(int)
+    df['VALOR DESEMBOLSADO'] = np.ceil(df['VALOR DESEMBOLSADO'].astype(float)).astype(int)
+    df['fechaInicialEjecucion'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'], errors='coerce')
+    df['fechaFinalEjecucion'] = pd.to_datetime(df['FECHA FINAL CREDITO'], errors='coerce')
+    df['plazoCredito'] = (df['fechaFinalEjecucion'] - df['fechaInicialEjecucion']).dt.days // 30
+    print('plazo',df['plazoCredito'])
+    df['valorCuota2'] = np.ceil(df['saldoCapitalCredito'] / df['plazoCredito']).astype(int)
+    print('valor2',df['valorCuota2'])
+    df['valorCuota1'] = np.ceil(df['saldoCapitalCredito'] - df['valorCuota2'] * (df['plazoCredito'] - 1)).astype(int)
+    print('valor1',df['valorCuota1'])
+    df['registro'] = '1'
+
+    df['valorTotalCredito'] = df['saldoCapitalCredito'].astype(str)
+    df['valorObligacion'] = df['saldoCapitalCredito'].astype(str)
+
+    return df
+
+# -------------------------------------
+# PASO 2 - transformar_a_estructura_xml
+# -------------------------------------
 
 
-    tabla.fillna("", inplace=True)
-    #abla["tipoCartera"] = tabla["tipoCartera"].astype(float)
-    # tabla['fechaSuscripcion']=tabla['fechaSuscripcion'].astype(str)
-    # tabla['fechaSuscripcion'] = tabla['fechaSuscripcion'].str.replace('/', '-')
-    # tabla['fechaDesembolso']=tabla['fechaDesembolso'].astype(str)
-    # tabla['fechaDesembolso'] = tabla['fechaDesembolso'].str.replace('/', '-')
-    # tabla['fechaCorte']= tabla['fechaCorte'].astype(str)
-    # tabla['fechaCorte'] = tabla['fechaCorte'].str.replace('/', '-')
-    # tabla['fechaInicialEjecucion']=tabla['fechaInicialEjecucion'].astype(str)
-    # tabla['fechaInicialEjecucion'] = tabla['fechaInicialEjecucion'].str.replace('/', '-')
-    # tabla['fechaFinalEjecucion']=tabla['fechaFinalEjecucion'].astype(str)
-    # tabla['fechaFinalEjecucion'] = tabla['fechaFinalEjecucion'].str.replace('/', '-')
-    # tabla['fechaAplicacionHasta']=tabla['fechaAplicacionHasta'].astype(str)
-    tabla['fechaAplicacionHasta'] = tabla['fechaAplicacionHasta'].str.replace('/', '-')
-    # tabla['fechaVencimientoFinal']=tabla['fechaVencimientoFinal'].astype(str)
-    tabla['fechaVencimientoFinal'] = tabla['fechaVencimientoFinal'].str.replace('/', '-')
+def transformar_a_estructura_xml(df, banco):
+    df = df.copy()
+    df['valorCuotaCapital'] = df['valorCuota1']
+    df['fechaAplicacionHasta'] = df['fechaFinalEjecucion'].apply(lambda x: calcular_fecha_aplicabilidad(x) if pd.notnull(x) else "")
 
-        # Lista de columnas de fechas
-    columnas_fechas = [
-        'fechaCorte',
-        'fechaInicialEjecucion', 'fechaFinalEjecucion',
-    ]
+    prueba2 = pd.DataFrame(index=df.index)
 
-    # Procesar cada columna de fechas
-    for col in columnas_fechas:
-        if col in tabla.columns:
-            # Convertir cada valor de la columna al formato yyyy-mm-dd
-            tabla[col] = tabla[col].astype(str).apply(asegurar_formato_fecha)
+    prueba2['tipoCartera'] = ["2"]*len(prueba2)
+    prueba2['programaCredito'] = "732"
+    prueba2['tipoOperacion'] = "1"
+    prueba2['tipoMoneda'] = "1"
+    prueba2['tipoAgrupamiento'] = "1"
+    prueba2['numeroPagare'] = df['PAGARE'].astype(str)
+    prueba2['numeroObligacionIntermediario'] = df['PAGARE'].astype(str)
+    prueba2['fechaSuscripcion'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
+    prueba2['fechaDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
+    prueba2['oficinaPagare'] = "100"
+    prueba2['oficinaObligacion'] = "100"
+    prueba2['codigo'] = "101059"
+    prueba2['cantidad'] = "1"
+    prueba2['correoElectronico'] = ""
+    prueba2['cumpleCondicionesProductorAgrupacion'] = "true"
+    prueba2['tipoAgrupacion'] = ""
+    prueba2['tipoPersona'] = "1"
+    prueba2['tipoProductor'] = df['TIPO PRODUCTOR'].astype(str)
+    prueba2['actividadEconomica'] = ""
+    prueba2['tipo'] = "2"
+    prueba2['numeroIdentificacion'] = df['IDENTIFICACION'].astype(str)
+    prueba2['digitoVerificacion'] = ""
+    prueba2['primerApellido'] = ""
+    prueba2['SegundoApellido'] = ""
+    prueba2['PrimerNombre'] = ""
+    prueba2['SegundoNombre'] = ""
+    prueba2['Razonsocial'] = df['NOMBRE COMPLETO']
+    prueba2['direccion'] = df['DIRECCION']
+    prueba2['municipio'] = "11001"
+    prueba2['prefijo'] = ""
+    prueba2['numero'] = df['TELEFONO'].astype(str)
+    prueba2['valor'] = df['MONTO ACTIVOS'].astype(str)
+    prueba2['fechaCorte'] = "2021-12-30"
+    prueba2['fechaInicialEjecucion'] = df['fechaInicialEjecucion'].dt.strftime('%Y-%m-%d')
+    prueba2['fechaFinalEjecucion'] = df['fechaFinalEjecucion'].dt.strftime('%Y-%m-%d')
+    prueba2['tipo2'] = "1"
+    prueba2['municipio2'] = "11001"
+    prueba2['direccion2'] = df['DIRECCION']
+    prueba2['codigo2'] = "165000"
+    prueba2['unidadesAFinanciar'] = "1"
+    prueba2['costoInversion'] = df['VALOR DESEMBOLSADO'].astype(str)
+    prueba2['valorAFinanciar'] = df['VALOR DESEMBOLSADO'].astype(str)
+    prueba2['fechaVencimientoFinal'] = df['fechaFinalEjecucion'].dt.strftime('%Y-%m-%d')
+    prueba2['plazoCredito'] = df['plazoCredito'].astype(str)
+    prueba2['valorTotalCredito'] = df['saldoCapitalCredito'].astype(str)
+    prueba2['porcentaje'] = "100"
+    prueba2['valorObligacion'] = df['saldoCapitalCredito'].astype(str)
+    prueba2['registro'] = "1"
+    prueba2['fechaAplicacionHasta'] = df['fechaAplicacionHasta']
+    prueba2['conceptoRegistroCuota'] = "K"
+    prueba2['periodicidadIntereses'] = "PE"
+    prueba2['periodicidadCapital'] = "PE"
+    prueba2['tasaBaseBeneficiario'] = "5"
+    prueba2['margenTasaBeneficiario'] = df['TASA FINAL'].astype(str)
+    prueba2['valorCuotaCapital'] = df['valorCuota1'].astype(str)
+    prueba2['porcentajeCapitalizacionIntereses'] = "0"
+    prueba2['margenTasaRedescuento'] = "0"
+    prueba2['valorIngresos'] = df['MONTO INGRESOS'].astype(str)
+    prueba2['Anticipo'] = ""
+    prueba2['valorTotalProyecto'] = ""
+    prueba2['valorTotalAFinanciar'] = ""
+    prueba2['plazoFinanciacion'] = df['plazoCredito'].astype(str)
+    prueba2['numeroProyecto'] = ""
+    prueba2['numeroDesembolso'] = ""
+    prueba2['desembolsos'] = ""
 
-    # Aplicar la función a las columnas relevantes
-    date_columns = ['fechaAplicacionHasta', 'fechaVencimientoFinal']
+    if banco != "Banco AV Villas":
+        copia = prueba2.copy()
+        copia['registro'] = "2"
+        copia['valorCuotaCapital'] = df['valorCuota2'].astype(str)
+        prueba2 = pd.concat([prueba2, copia], ignore_index=True)
 
-    for column in date_columns:
-        tabla[column] = tabla[column].apply(convertir_fecha_a_formato)
-
-
-    tabla['PrimerNombre'] = tabla['PrimerNombre'].str.replace('Ð', 'Ñ')
-    tabla['SegundoNombre'] = tabla['SegundoNombre'].str.replace('Ð', 'Ñ')
-    tabla['primerApellido'] = tabla['primerApellido'].str.replace('Ð', 'Ñ')
-    tabla['SegundoApellido'] = tabla['SegundoApellido'].str.replace('Ð', 'Ñ')
-    tabla['Razonsocial'] = tabla['Razonsocial'].str.replace('Ð', 'Ñ')
-    tabla['correoElectronico'] = tabla['correoElectronico'].str.replace('Ð', 'Ñ')
-    #tabla['numeroPagare'] = tabla['numeroPagare'].apply(lambda x: x.replace('F','00'))
-    #tabla['numeroObligacionIntermediario'] = tabla['numeroObligacionIntermediario'].apply(lambda x: x.replace('F','00'))
-    tabla['digitoVerificacion']=tabla['digitoVerificacion'].astype(str)
-    tabla['digitoVerificacion'] = tabla['digitoVerificacion'].apply(lambda x: x.replace('.0',''))
-    tabla['numero']=tabla['numero'].astype(str)
-    tabla['numero'] = tabla['numero'].apply(lambda x: x.replace('.0',''))
-    tabla['municipio']=tabla['municipio'].astype(str)
-    tabla['municipio'] = tabla['municipio'].apply(lambda x: x.replace('.0',''))
+    return prueba2
 
 
+# -------------------------------------
+# PASO 3 - procesar_excel (genera XML)
+# -------------------------------------
+def procesar_excel(tabla,num_operaciones,banco):
 
-    #nur =  input('Cuantas operaciones vas a cargar: ')
-    nur = num_operaciones
-    #vtotal =  input('Cual es el valor total de la carga: ')
-    vtotal = tabla['valorTotalCredito'].sum()
-    vtotal = vtotal/2
-    nur=str(nur)
-    vtotal=str(vtotal)
-    vtotal = vtotal.replace('.0','')
-
-    #ET.register_namespace('xsi', "http://www.w3.org/2001/XMLSchema-instance")
-    #ET.register_namespace('xsd', "http://www.w3.org/2001/XMLSchema")
-
-
+    vtotal = '0'
     ET.register_namespace('', "http://www.finagro.com.co/sit")
     Obligaciones = ET.Element('obligaciones', {'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
                                             'xmlns:xsd': 'http://www.w3.org/2001/XMLSchema',
-                                            'cifraDeControl': nur,
+                                            'cifraDeControl': str(num_operaciones),
                                             'cifraDeControlValor': vtotal,
                                             
                                             })
 
     #Obligaciones=ET.Element('{http://www.finagro.com.co/sit}obligaciones',cifraDeControlValor=vtotal,cifraDeControl=nur)
     #Obligaciones=ET.Element('{http://www.w3.org/2001/XMLSchema}obligaciones',cifraDeControlValor=vtotal,cifraDeControl=nur)
-    Ni = len(tabla['tipoCartera'])
+    num_operaciones= num_operaciones*2
     fechas_ok = 0
     fechas_no_concuerdan = 0
 
-    for i in range(Ni):
+    for i in range(num_operaciones):
 
         tc=tabla.iloc[i,0]  #tipoCartera
         pc=tabla.iloc[i,1]  #programaCredito
@@ -308,6 +295,7 @@ def procesar_excel(file, num_operaciones):
         pf=str(pf)
         vai=str(vai)
         #fci=str(fci)
+        print(tc)
 
 
         if reg == str(1):
@@ -329,7 +317,7 @@ def procesar_excel(file, num_operaciones):
             ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}direccionCorrespondencia', direccion=dir, municipio=mun)
             ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}numeroTelefono', prefijo=pref, numero=num)
             ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}valorActivos', valor=va, fechaCorte=fc, tipoDato="COP")
-            ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}valorIngresos', valor=vai, fechaCorte='2023-12-31', tipoDato="COP")
+            ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}valorIngresos', valor=vai, fechaCorte='2024-12-31', tipoDato="COP")
 
             if pf == str(1): #(nuevo)
                 proyecto=ET.SubElement(obligacion,'{http://www.finagro.com.co/sit}proyecto', fechaInicialEjecucion=fie, fechaFinalEjecucion=ffe)
@@ -337,7 +325,6 @@ def procesar_excel(file, num_operaciones):
                 proyectosFinanciados=ET.SubElement(proyecto,'{http://www.finagro.com.co/sit}proyectosFinanciados',valorTotalProyecto="",valorTotalAFinanciar="",plazoFinanciacion="",numeroProyecto="",numeroDesembolso="99",desembolsos="")
                 ET.SubElement(proyectosFinanciados,'{http://www.finagro.com.co/sit}destinosProyecto',codigoDestinoCredito="",valorAFinanciar="",unidadesAFinanciar="",costoInversion="")
                 ET.SubElement(proyectosFinanciados,'{http://www.finagro.com.co/sit}municipios',municipio="")
-
 
 
             elif len(pf) == 0:
@@ -402,149 +389,30 @@ def procesar_excel(file, num_operaciones):
     zip_buffer.seek(0)  # Mover el puntero al inicio
     return zip_buffer, zip_name
 
-        
+# -------------------------------------
+# STREAMLIT INTERFAZ
+# -------------------------------------
 
+st.title("Generador de XML desde archivo Insumo")
+st.write("Sube un archivo de Excel con información financiera para convertirlo a XML")
 
-    # ciiu = pd.read_excel(os.path.join('data', 'Ejemplo.xlsx'))
-    # ciiu = ciiu.astype('str')
-    # data_dict = ciiu.to_dict(orient='records')
-
-    # wb = load_workbook(filename=archivo)
-    # hoja = wb['Hoja2']
-    # archivo_2= r'M:\Bancos\Banco Caja Social\Informes\INFORME CAJA SOCIAL CONSOLIDADO.xlsx'
-    # wb_informe = load_workbook(filename=archivo_2)
-    # hoja_informe = wb_informe['REGISTRO PARA INFORME  DIARIO ']
-    # archivo_3 = r'M:\Bancos\Banco Caja Social\Otros\PAF MICROCREDITO_CAJA SOCIAL.xlsx'
-    # wb_planificacion = load_workbook(filename=archivo_3)
-    # hoja_planificacion = wb_planificacion['FORMATO -PÁGINA 1 (1)']
-    # hoja_planificacion_2 = wb_planificacion['Hoja1']
-
-    # archivo_4 = os.path.join('data', 'Macro_organizacion_de_datos.xlsm')
-    # wb_macro = load_workbook(filename=archivo_4)
-    # hoja_macro = wb_macro['MICROCREDITO CAJA SOCIAL']
-
-
-    # for row in range(1, hoja_informe.max_row + 1):
-    #     if hoja_informe[f'A{row}'].value is not None:
-    #         ultima_fila_con_texto = row
-        
-    # fecha = datetime.now()
-    # fecha_formateada = fecha.strftime('%d-%m-%Y')
-    # fecha_ayer = fecha - timedelta(days=1)
-    # iterador = int((hoja.max_row)/2)
-    # nur = int(nur)
-    # for i in range(1,nur+1):
-    #     wb_planificacion = load_workbook(filename=archivo_3)
-    #     hoja_planificacion = wb_planificacion['FORMATO -PÁGINA 1 (1)']
-    #     hoja_planificacion_2 = wb_planificacion['Hoja1']
-    #     hoja_informe[f'A{ultima_fila_con_texto + i}'] = 'REGISTRADO'
-    #     hoja_informe[f'B{ultima_fila_con_texto + i}'] = 'BANCO CAJA SOCIAL'
-    #     hoja_informe[f'C{ultima_fila_con_texto + i}'] = hoja[f'U{i}'].value
-    #     Nombre = '\PAFF CAJA SOCIAL_' + str(hoja[f'U{i}'].value) + '.xlsx'
-    #     ruta = 'M:\Bancos\Banco Caja Social\Otros\Proyectos'+ Nombre
-    #     hoja_planificacion['O9'] = hoja[f'U{i}'].value
-    #     hoja_informe[f'AS{ultima_fila_con_texto + i}'] = hoja_macro[f'E{i + 1}'].value
-    #     hoja_planificacion_2['A1'] = hoja_macro[f'E{i + 1}'].value
-    #     cod_ciiu = str(hoja_macro[f'E{i + 1}'].value)
-
-    #     descripcion = None
-    #     for item in data_dict:
-    #         if item['Codigo'] == cod_ciiu:
-    #             descripcion = item['Descripción']
-    #             break
-
-    #     for j in range(3):  
-    #         valores = []
-    #         for letra in ['W', 'X', 'Y', 'Z']:  
-    #             valor = hoja[f'{letra}{i}'].value
-    #             if valor is None:   
-    #                 valor = ''  
-    #             valores.append(str(valor))
-
-    #     justificacion = str('El objeto social de '+ ' '.join(valores)) + 'es ' + str(descripcion) 
-    #     hoja_planificacion['C42'] = justificacion
-    #     hoja_planificacion['C48'] = 'Los recursos de este proyecto serán utilizados en el crubrimiento de los costos y gastos relacionados con la ejecución del objeto social del cliente, principalmente ' + str(descripcion) 
-    #     hoja_informe[f'D{ultima_fila_con_texto + i}'].value = ' '.join(valores)
-    #     hoja_planificacion['C8'] = ' '.join(valores)
-    #     hoja_informe[f'E{ultima_fila_con_texto + i}'] = hoja[f'AB{i}'].value
-    #     hoja_planificacion['C10'] = hoja[f'AB{i}'].value
-    #     #hoja_informe[f'F{ultima_fila_con_texto + i}'] = hoja[f'AC{i}'].value
-    #     #hoja_planificacion['J10'] = hoja[f'AC{i}'].value
-    #     hoja_informe[f'F{ultima_fila_con_texto + i}'] = str(hoja_macro[f'G{i + 1}'].value).upper()
-    #     hoja_informe[f'G{ultima_fila_con_texto + i}'] = str(hoja_macro[f'I{i + 1}'].value).upper()
-    #     hoja_planificacion['J10'] = str(hoja_macro[f'G{i + 1}'].value).upper()
-    #     hoja_planificacion['K10'] = str(hoja_macro[f'I{i + 1}'].value).upper()
-    #     hoja_informe[f'H{ultima_fila_con_texto + i}'] = hoja[f'AG{i}'].value
-    #     hoja_informe[f'I{ultima_fila_con_texto + i}'] = hoja[f'AF{i}'].value
-    #     hoja_planificacion['M14'] = hoja[f'AF{i}'].value 
-    #     hoja_informe[f'J{ultima_fila_con_texto + i}'] = fecha_formateada
-    #     hoja_informe[f'K{ultima_fila_con_texto + i}'] = fecha_ayer
-    #     hoja_informe[f'L{ultima_fila_con_texto + i}'] = hoja[f'AP{i}'].value
-    #     hoja_planificacion['J61'] = hoja[f'AP{i}'].value
-    #     hoja_planificacion['K61'] = hoja[f'AP{i}'].value
-    #     hoja_informe[f'M{ultima_fila_con_texto + i}'] = hoja[f'AP{i}'].value
-    #     hoja_informe[f'N{ultima_fila_con_texto + i}'] = hoja[f'AR{i}'].value
-    #     hoja_planificacion['M61'] = hoja[f'AR{i}'].value
-    #     hoja_informe[f'O{ultima_fila_con_texto + i}'] = 'MES VENCIDO'
-    #     hoja_informe[f'P{ultima_fila_con_texto + i}'] = 'MES VENCIDO'
-    #     hoja_informe[f'Q{ultima_fila_con_texto + i}'] = hoja[f'BB{i}'].value
-    #     hoja_planificacion['R61'] = hoja[f'BB{i}'].value
-    #     if hoja[f'R{i}'].value == '11':
-    #         hoja_informe[f'R{ultima_fila_con_texto + i}'] = 'MICROEMPRESARIO'
-    #     else:
-    #         hoja_informe[f'R{ultima_fila_con_texto + i}'] = 'MICROEMPRESARIO PPIB'
-
-    #     hoja_informe[f'AQ{ultima_fila_con_texto + i}'] = hoja[f'F{i}'].value
-    #     hoja_informe[f'AV{ultima_fila_con_texto + i}'] = hoja[f'BF{i}'].value
-    #     hoja_planificacion['H14'] = hoja[f'BF{i}'].value
-    #     hoja_planificacion['N2'] = hoja[f'G{i}'].value
-
-    #     wb = xw.Book(archivo_4)
-    #     hoja_macro = wb.sheets['MICROCREDITO CAJA SOCIAL']
-    #     valor_ingreso = hoja_macro.range(f'AT{i+1}').value
-    #     wb_macro = load_workbook(filename=archivo_4)
-    #     hoja_macro = wb_macro['MICROCREDITO CAJA SOCIAL']
-    #     hoja_planificacion['H13'] = 'Monto de Ingresos ' + valor_ingreso
-    #     wb = xw.Book(archivo_4)
-    #     hoja_macro = wb.sheets['MICROCREDITO CAJA SOCIAL']
-    #     valor_ingreso = hoja_macro.range(f'AQ{i+1}').value
-    #     wb_macro = load_workbook(filename=archivo_4)
-    #     hoja_macro = wb_macro['MICROCREDITO CAJA SOCIAL']
-    #     hoja_planificacion['M13'] = 'Monto de Activos ' + valor_ingreso
-        
-    #     wb_planificacion.save(filename=ruta)
-
-
-    # wb_informe.save(filename=archivo_2)
-    # wb_macro.close()
-    print('Proyectos generados satisfactoriamente')
-    return f'{ruta_carpeta}.zip'
-
-
-# Streamlit para la descarga
-st.title("Generador de XML a partir de Excel")
-st.write("Sube tu archivo Excel, ingresa el número de operaciones y descarga el XML generado.")
-
-# Campo para ingresar el número de operaciones
 num_operaciones = st.number_input("Número de operaciones", min_value=1, step=1)
+banco = st.selectbox("Selecciona el banco", ["Banco AV Villas", "Banco Caja social", "Banco Santander"])
+archivo = st.file_uploader("Sube el archivo Excel", type=["xlsx"])
 
-# Cargar archivo
-uploaded_file = st.file_uploader("Sube tu archivo Excel", type=["xlsx"])
 
-if uploaded_file and num_operaciones > 0:
-    # Procesar el archivo subido si el número de operaciones es válido
-    with st.spinner("Procesando el archivo..."):
-        zip_buffer, zip_name = procesar_excel(uploaded_file, num_operaciones)
-    
-    # Mostrar el botón para descargar el archivo ZIP
-    st.success("¡XML generado con éxito!")
-    st.download_button(
-        label="Descargar XML comprimido",
-        data=zip_buffer,
-        file_name=zip_name,  # Nombre dinámico del archivo ZIP
-        mime="application/zip"
-    )
-elif not uploaded_file:
+if archivo and num_operaciones > 0:
+    with st.spinner("Procesando archivo..."):
+        base = macro_excel(archivo, banco)
+        prueba2 = transformar_a_estructura_xml(base, banco)
+        st.subheader("Vista previa del DataFrame transformado (prueba2)")
+        st.dataframe(prueba2)
+
+        zip_buffer, zip_name = procesar_excel(prueba2, num_operaciones, banco)
+
+    st.success("XML generado con éxito.")
+    st.download_button("Descargar XML", zip_buffer, file_name=zip_name, mime="application/zip")
+elif not archivo:
     st.warning("Por favor, sube un archivo Excel.")
 elif num_operaciones <= 0:
-    st.warning("Por favor, ingresa un número válido de operaciones.")
+    st.warning("Ingresa un número válido de operaciones.")
