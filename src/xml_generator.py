@@ -41,7 +41,7 @@ def format_xml(xml_str):
 def macro_excel(archivo, banco):
     col = ['IDENTIFICACION', 'NOMBRE COMPLETO', 'CODIGO MUN', 'MONTO INGRESOS', 'MONTO ACTIVOS',
            'VALOR DESEMBOLSADO', 'SALDO A CAPITAL DEL CREDITO', 'FECHA INICIAL DEL CREDITO', 'FECHA FINAL CREDITO',
-           'AMORTIZACION', 'TASA FINAL', 'DIRECCION', 'TELEFONO', 'PAGARE', 'TIPO PRODUCTOR']
+           'FECHA ACTIVOS', 'AMORTIZACION', 'TASA FINAL', 'DIRECCION', 'TELEFONO', 'PAGARE', 'TIPO PRODUCTOR','RUBRO','ACTIVIDAD','OFICINA','CORREO']
     
     df = pd.read_excel(archivo, names=col, header=0).fillna("")
     df['saldoCapitalCredito'] = np.ceil(df['SALDO A CAPITAL DEL CREDITO'].astype(float)).astype(int)
@@ -49,11 +49,8 @@ def macro_excel(archivo, banco):
     df['fechaInicialEjecucion'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'], errors='coerce')
     df['fechaFinalEjecucion'] = pd.to_datetime(df['FECHA FINAL CREDITO'], errors='coerce')
     df['plazoCredito'] = (df['fechaFinalEjecucion'] - df['fechaInicialEjecucion']).dt.days // 30
-    print('plazo',df['plazoCredito'])
     df['valorCuota2'] = np.ceil(df['saldoCapitalCredito'] / df['plazoCredito']).astype(int)
-    print('valor2',df['valorCuota2'])
     df['valorCuota1'] = np.ceil(df['saldoCapitalCredito'] - df['valorCuota2'] * (df['plazoCredito'] - 1)).astype(int)
-    print('valor1',df['valorCuota1'])
     df['registro'] = '1'
 
     df['valorTotalCredito'] = df['saldoCapitalCredito'].astype(str)
@@ -74,7 +71,10 @@ def transformar_a_estructura_xml(df, banco):
     prueba2 = pd.DataFrame(index=df.index)
 
     prueba2['tipoCartera'] = ["2"]*len(prueba2)
-    prueba2['programaCredito'] = "732"
+    if banco == 'Banco AV Villas':
+        prueba2['programaCredito'] = "733" 
+    else:
+        prueba2['programaCredito'] = "732"
     prueba2['tipoOperacion'] = "1"
     prueba2['tipoMoneda'] = "1"
     prueba2['tipoAgrupamiento'] = "1"
@@ -82,36 +82,79 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['numeroObligacionIntermediario'] = df['PAGARE'].astype(str)
     prueba2['fechaSuscripcion'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
     prueba2['fechaDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
-    prueba2['oficinaPagare'] = "100"
-    prueba2['oficinaObligacion'] = "100"
-    prueba2['codigo'] = "101059"
+    prueba2['oficinaPagare'] = df['OFICINA']
+    prueba2['oficinaObligacion'] = df['OFICINA']
+    if banco == 'Banco Santander':
+        prueba2['codigo'] = "101059"
+    elif banco == 'Banco Caja Social':
+        prueba2['codigo'] = '101030'
+    elif banco == 'Banco AV Villas':
+        prueba2['codigo'] = '101049'
     prueba2['cantidad'] = "1"
-    prueba2['correoElectronico'] = ""
+    prueba2['correoElectronico'] = df['CORREO'].astype(str)
     prueba2['cumpleCondicionesProductorAgrupacion'] = "true"
     prueba2['tipoAgrupacion'] = ""
-    prueba2['tipoPersona'] = "1"
+    if banco == 'Banco AV Villas':
+        prueba2['tipoPersona'] = "2"
+    else:
+        prueba2['tipoPersona'] = "1"
     prueba2['tipoProductor'] = df['TIPO PRODUCTOR'].astype(str)
-    prueba2['actividadEconomica'] = ""
-    prueba2['tipo'] = "2"
-    prueba2['numeroIdentificacion'] = df['IDENTIFICACION'].astype(str)
-    prueba2['digitoVerificacion'] = ""
-    prueba2['primerApellido'] = ""
-    prueba2['SegundoApellido'] = ""
+    prueba2['actividadEconomica'] = df['ACTIVIDAD'].astype(str)
+    if banco == 'Banco AV Villas':
+       prueba2['tipo'] = "1" 
+    else:
+        prueba2['tipo'] = "2"
+
+    if banco == 'Banco AV Villas':
+       prueba2['numeroIdentificacion'] = df['IDENTIFICACION'].astype(str).str[:-2]
+    else:
+        prueba2['numeroIdentificacion'] = df['IDENTIFICACION'].astype(str)
+    if banco == 'Banco AV Villas':
+        prueba2['digitoVerificacion'] = df['IDENTIFICACION'].astype(str).str[-1]
+    else:
+         prueba2['digitoVerificacion'] = ""
     prueba2['PrimerNombre'] = ""
     prueba2['SegundoNombre'] = ""
+    prueba2['primerApellido'] = ""
+    prueba2['SegundoApellido'] = ""
+    prueba2 = prueba2.reset_index(drop=True)
+    df = df.reset_index(drop=True)
+    if banco != "Banco AV Villas":
+        for i in range(len(df)):
+            nombre = str(df.loc[i, 'NOMBRE COMPLETO']).strip()
+            partes = nombre.split()
+            if len(partes) == 2:
+                prueba2.loc[i, 'PrimerNombre'] = partes[0]
+                prueba2.loc[i, 'primerApellido'] = partes[1]
+            elif len(partes) == 3:
+                prueba2.loc[i, 'PrimerNombre'] = partes[0]
+                prueba2.loc[i, 'primerApellido'] = partes[1]
+                prueba2.loc[i, 'SegundoApellido'] = partes[2]
+            elif len(partes) >= 4:
+                prueba2.loc[i, 'PrimerNombre'] = partes[0]
+                prueba2.loc[i, 'SegundoNombre'] = partes[1]
+                prueba2.loc[i, 'primerApellido'] = partes[2]
+                prueba2.loc[i, 'SegundoApellido'] = partes[3]
+    else:
+        prueba2['Razonsocial'] = df['NOMBRE COMPLETO']
+
     prueba2['Razonsocial'] = df['NOMBRE COMPLETO']
-    prueba2['direccion'] = df['DIRECCION']
-    prueba2['municipio'] = "11001"
+    prueba2['direccion'] = 'R| ' + df['DIRECCION'].astype(str)
+    prueba2['municipio'] = df['CODIGO MUN']
     prueba2['prefijo'] = ""
     prueba2['numero'] = df['TELEFONO'].astype(str)
     prueba2['valor'] = df['MONTO ACTIVOS'].astype(str)
-    prueba2['fechaCorte'] = "2021-12-30"
+    prueba2['fechaCorte'] = df['FECHA ACTIVOS'].apply(convertir_a_formato_yyyy_mm_dd)
+    df['fechaInicialEjecucion'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'], errors='coerce') - pd.Timedelta(days=180)
+    df['fechaFinalEjecucion'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'], errors='coerce') + pd.Timedelta(days=360)
+
     prueba2['fechaInicialEjecucion'] = df['fechaInicialEjecucion'].dt.strftime('%Y-%m-%d')
     prueba2['fechaFinalEjecucion'] = df['fechaFinalEjecucion'].dt.strftime('%Y-%m-%d')
+
     prueba2['tipo2'] = "1"
-    prueba2['municipio2'] = "11001"
-    prueba2['direccion2'] = df['DIRECCION']
-    prueba2['codigo2'] = "165000"
+    prueba2['municipio2'] = df['CODIGO MUN']
+    prueba2['direccion2'] = 'R| ' + df['DIRECCION'].astype(str)
+    prueba2['codigo2'] = df['RUBRO'].astype(str)
     prueba2['unidadesAFinanciar'] = "1"
     prueba2['costoInversion'] = df['VALOR DESEMBOLSADO'].astype(str)
     prueba2['valorAFinanciar'] = df['VALOR DESEMBOLSADO'].astype(str)
@@ -144,27 +187,35 @@ def transformar_a_estructura_xml(df, banco):
         copia['registro'] = "2"
         copia['valorCuotaCapital'] = df['valorCuota2'].astype(str)
         prueba2 = pd.concat([prueba2, copia], ignore_index=True)
+        prueba2 = prueba2.sort_values(by=['numeroIdentificacion', 'registro']).reset_index(drop=True)
+
 
     return prueba2
 
+def obtener_valor_total_credito(df, banco):
+    total = df['valorTotalCredito'].astype(float).sum()
+    if banco != "Banco AV Villas":
+        total = total / 2  # porque están duplicadas
+    return int(total)
 
 # -------------------------------------
 # PASO 3 - procesar_excel (genera XML)
 # -------------------------------------
 def procesar_excel(tabla,num_operaciones,banco):
 
-    vtotal = '0'
+    vtotal = str(obtener_valor_total_credito(tabla, banco))
+
     ET.register_namespace('', "http://www.finagro.com.co/sit")
     Obligaciones = ET.Element('obligaciones', {'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
                                             'xmlns:xsd': 'http://www.w3.org/2001/XMLSchema',
                                             'cifraDeControl': str(num_operaciones),
-                                            'cifraDeControlValor': vtotal,
+                                            'cifraDeControlValor': str(vtotal),
                                             
                                             })
 
     #Obligaciones=ET.Element('{http://www.finagro.com.co/sit}obligaciones',cifraDeControlValor=vtotal,cifraDeControl=nur)
     #Obligaciones=ET.Element('{http://www.w3.org/2001/XMLSchema}obligaciones',cifraDeControlValor=vtotal,cifraDeControl=nur)
-    num_operaciones= num_operaciones*2
+    num_operaciones = len(tabla)
     fechas_ok = 0
     fechas_no_concuerdan = 0
 
@@ -295,7 +346,7 @@ def procesar_excel(tabla,num_operaciones,banco):
         pf=str(pf)
         vai=str(vai)
         #fci=str(fci)
-        print(tc)
+        
 
 
         if reg == str(1):
@@ -393,8 +444,12 @@ def procesar_excel(tabla,num_operaciones,banco):
 # STREAMLIT INTERFAZ
 # -------------------------------------
 
-st.title("Generador de XML desde archivo Insumo")
-st.write("Sube un archivo de Excel con información financiera para convertirlo a XML")
+st.title("Generador carga masiva")
+st.write("Sube un archivo de Excel con la siguiente informacion: \n" \
+"Identificaion, nombre completo, codigo mun, monto ingresos, monto activos, \n" \
+"valor desembolsado, saldo a capital credito, fecha inicial del credito, fecha final credito,\n" \
+"amortizacion, tasa final, direccion, telefono, pagare, tipo de productor")
+st.write("El excel que se suba debe tener los mismos nombres de columna que fueron mencionados.")
 
 num_operaciones = st.number_input("Número de operaciones", min_value=1, step=1)
 banco = st.selectbox("Selecciona el banco", ["Banco AV Villas", "Banco Caja social", "Banco Santander"])
