@@ -7,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import numpy as np
+from dateutil.relativedelta import relativedelta
 
 # -------------------------------------
 # FUNCIONES AUXILIARES
@@ -14,22 +15,64 @@ import numpy as np
 
 def convertir_a_formato_yyyy_mm_dd(fecha):
     try:
-        return datetime.strptime(str(fecha), "%Y-%m-%d").strftime("%Y-%m-%d")
-    except ValueError:
-        try:
-            return datetime.strptime(str(fecha), "%d-%m-%Y").strftime("%Y-%m-%d")
-        except ValueError:
-            try:
-                return pd.to_datetime(fecha, errors='coerce').strftime("%Y-%m-%d")
-            except:
-                return ""
+        return pd.to_datetime(str(fecha), dayfirst=True, errors='coerce').strftime('%Y-%m-%d')
+    except:
+        return ""
 
 def calcular_fecha_aplicabilidad(fecha_final):
+    if isinstance(fecha_final, str):
+        fecha_final = pd.to_datetime(fecha_final, dayfirst=True, errors='coerce')
+
+    if pd.isnull(fecha_final):
+        return ""
+
     hoy = datetime.today()
     dia_final = fecha_final.day
-    mes = hoy.month + 1 if (hoy.day + 6 > dia_final) else hoy.month
-    anio = hoy.year + 1 if mes == 1 and hoy.month == 12 else hoy.year
-    return f"{anio}-{mes:02d}-{dia_final:02d}"
+
+    base = datetime(hoy.year, hoy.month, dia_final)
+    try:
+        fecha_base = base.replace(month=hoy.month + 1)
+    except ValueError:
+        # manejar caso en que mes + 1 = 13 (diciembre a enero)
+        if hoy.month == 12:
+            fecha_base = base.replace(year=hoy.year + 1, month=1)
+        else:
+            raise
+
+    if fecha_base < hoy + pd.Timedelta(days=30):
+        # mover a dos meses en adelante
+        if fecha_base.month == 12:
+            fecha_final = fecha_base.replace(year=fecha_base.year + 1, month=2)
+        elif fecha_base.month == 11:
+            fecha_final = fecha_base.replace(year=fecha_base.year + 1, month=1)
+        else:
+            fecha_final = fecha_base.replace(month=fecha_base.month + 1)
+    else:
+        fecha_final = fecha_base
+
+    return fecha_final.strftime('%Y-%m-%d')
+
+def calcular_plazo_cuota(fecha_inicio, fecha_fin):
+    if pd.isnull(fecha_inicio) or pd.isnull(fecha_fin):
+        return None
+    if fecha_inicio > fecha_fin:
+        return None
+    delta = relativedelta(fecha_fin, fecha_inicio)
+    meses = delta.years * 12 + delta.months
+    # Asegura que al menos devuelva 1 mes
+    return max(meses, 1)
+
+
+
+def calcular_meses_completos_con_salto(fecha_inicial, fecha_final):
+    if pd.isnull(fecha_inicial) or pd.isnull(fecha_final):
+        return 0
+    rd = relativedelta(fecha_final, fecha_inicial)
+    meses = rd.years * 12 + rd.months
+    if rd.days > 0:
+        meses += 1
+    return meses
+
 
 def format_xml(xml_str):
     return xml.dom.minidom.parseString(xml_str).toprettyxml()
@@ -43,18 +86,31 @@ def macro_excel(archivo, banco):
            'VALOR DESEMBOLSADO', 'SALDO A CAPITAL DEL CREDITO', 'FECHA INICIAL DEL CREDITO', 'FECHA FINAL CREDITO',
            'FECHA ACTIVOS', 'AMORTIZACION', 'TASA FINAL', 'DIRECCION', 'TELEFONO', 'PAGARE', 'TIPO PRODUCTOR','RUBRO','ACTIVIDAD','OFICINA','CORREO']
     
-    df = pd.read_excel(archivo, names=col, header=0).fillna("")
+    df = pd.read_excel(archivo, names=col, header=0, dtype=str).fillna("")
     df['saldoCapitalCredito'] = np.ceil(df['SALDO A CAPITAL DEL CREDITO'].astype(float)).astype(int)
     df['VALOR DESEMBOLSADO'] = np.ceil(df['VALOR DESEMBOLSADO'].astype(float)).astype(int)
-    df['fechaInicialEjecucion'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'], errors='coerce')
-    df['fechaFinalEjecucion'] = pd.to_datetime(df['FECHA FINAL CREDITO'], errors='coerce')
-    df['plazoCredito'] = (df['fechaFinalEjecucion'] - df['fechaInicialEjecucion']).dt.days // 30
-    df['valorCuota2'] = np.ceil(df['saldoCapitalCredito'] / df['plazoCredito']).astype(int)
-    df['valorCuota1'] = np.ceil(df['saldoCapitalCredito'] - df['valorCuota2'] * (df['plazoCredito'] - 1)).astype(int)
-    df['registro'] = '1'
+    df['fechaDesembolso'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
+    df['fechaVencimientoFinal'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
 
+    df['plazoCredito'] = df.apply(lambda row: calcular_meses_completos_con_salto(row['fechaDesembolso'], row['fechaVencimientoFinal']), axis=1)
+
+    if banco == "Banco AV Villas":
+        df['valorCuota1'] = df['saldoCapitalCredito']
+        df['valorCuota2'] = 0  # o puedes omitir este campo si no lo vas a usar
+    else:
+
+        df['valorCuota2'] = df.apply(
+            lambda row: np.floor(row['saldoCapitalCredito'] / calcular_plazo_cuota(row['fechaDesembolso'], row['fechaVencimientoFinal'])),
+            axis=1
+        ).astype(int)
+        
+        df['valorCuota1'] = df.apply(
+            lambda row: int(row['saldoCapitalCredito'] - row['valorCuota2'] * (calcular_plazo_cuota(row['fechaDesembolso'], row['fechaVencimientoFinal']) - 1)),
+            axis=1
+        )
+
+    df['registro'] = '1'
     df['valorTotalCredito'] = df['saldoCapitalCredito'].astype(str)
-    df['valorObligacion'] = df['saldoCapitalCredito'].astype(str)
 
     return df
 
@@ -66,7 +122,10 @@ def macro_excel(archivo, banco):
 def transformar_a_estructura_xml(df, banco):
     df = df.copy()
     df['valorCuotaCapital'] = df['valorCuota1']
-    df['fechaAplicacionHasta'] = df['fechaFinalEjecucion'].apply(lambda x: calcular_fecha_aplicabilidad(x) if pd.notnull(x) else "")
+    if banco == 'Banco AV Villas':
+        df['fechaAplicacionHasta'] = df['fechaVencimientoFinal']
+    else:
+        df['fechaAplicacionHasta'] = df['fechaVencimientoFinal'].apply(lambda x: calcular_fecha_aplicabilidad(x) if pd.notnull(x) else "")
 
     prueba2 = pd.DataFrame(index=df.index)
 
@@ -86,13 +145,13 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['oficinaObligacion'] = df['OFICINA']
     if banco == 'Banco Santander':
         prueba2['codigo'] = "101059"
-    elif banco == 'Banco Caja Social':
+    elif banco == 'Banco Caja social':
         prueba2['codigo'] = '101030'
     elif banco == 'Banco AV Villas':
         prueba2['codigo'] = '101049'
     prueba2['cantidad'] = "1"
     prueba2['correoElectronico'] = df['CORREO'].astype(str)
-    prueba2['cumpleCondicionesProductorAgrupacion'] = "true"
+    prueba2['cumpleCondicionesProductorAgrupacion'] = "VERDADERO"
     prueba2['tipoAgrupacion'] = ""
     if banco == 'Banco AV Villas':
         prueba2['tipoPersona'] = "2"
@@ -158,13 +217,16 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['unidadesAFinanciar'] = "1"
     prueba2['costoInversion'] = df['VALOR DESEMBOLSADO'].astype(str)
     prueba2['valorAFinanciar'] = df['VALOR DESEMBOLSADO'].astype(str)
-    prueba2['fechaVencimientoFinal'] = df['fechaFinalEjecucion'].dt.strftime('%Y-%m-%d')
+    prueba2['fechaVencimientoFinal'] = df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
     prueba2['plazoCredito'] = df['plazoCredito'].astype(str)
     prueba2['valorTotalCredito'] = df['saldoCapitalCredito'].astype(str)
     prueba2['porcentaje'] = "100"
     prueba2['valorObligacion'] = df['saldoCapitalCredito'].astype(str)
     prueba2['registro'] = "1"
-    prueba2['fechaAplicacionHasta'] = df['fechaAplicacionHasta']
+    if banco == 'Banco AV Villas':
+        prueba2['fechaAplicacionHasta'] = df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
+    else:
+        prueba2['fechaAplicacionHasta'] = df['FECHA FINAL CREDITO'].apply(calcular_fecha_aplicabilidad)
     prueba2['conceptoRegistroCuota'] = "K"
     prueba2['periodicidadIntereses'] = "PE"
     prueba2['periodicidadCapital'] = "PE"
@@ -177,7 +239,6 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['Anticipo'] = ""
     prueba2['valorTotalProyecto'] = ""
     prueba2['valorTotalAFinanciar'] = ""
-    prueba2['plazoFinanciacion'] = df['plazoCredito'].astype(str)
     prueba2['numeroProyecto'] = ""
     prueba2['numeroDesembolso'] = ""
     prueba2['desembolsos'] = ""
@@ -185,9 +246,13 @@ def transformar_a_estructura_xml(df, banco):
     if banco != "Banco AV Villas":
         copia = prueba2.copy()
         copia['registro'] = "2"
+        copia['periodicidadIntereses'] = "MV"
+        copia['periodicidadCapital'] = "MV"
         copia['valorCuotaCapital'] = df['valorCuota2'].astype(str)
+        copia['fechaAplicacionHasta'] = df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)  # Aquí cambia
         prueba2 = pd.concat([prueba2, copia], ignore_index=True)
         prueba2 = prueba2.sort_values(by=['numeroIdentificacion', 'registro']).reset_index(drop=True)
+
 
 
     return prueba2
@@ -348,10 +413,8 @@ def procesar_excel(tabla,num_operaciones,banco):
         #fci=str(fci)
         
 
-
         if reg == str(1):
 
-            
             obligacion=ET.SubElement(Obligaciones,'{http://www.finagro.com.co/sit}obligacion',tipoCartera=tc,programaCredito=pc,tipoOperacion=to,tipoMoneda=tm,tipoAgrupamiento=ta,numeroPagare=np,numeroObligacionIntermediario=noi,fechaSuscripcion=fs,fechaDesembolso=fd)
             ET.SubElement(obligacion,'{http://www.finagro.com.co/sit}intermediario', oficinaPagare=op,oficinaObligacion=ofo,codigo=cod)
             beneficiarios=ET.SubElement(obligacion,'{http://www.finagro.com.co/sit}beneficiarios',cantidad=can)
@@ -359,11 +422,11 @@ def procesar_excel(tabla,num_operaciones,banco):
             type(int(can))
             if dv == "":
                 ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}identificacion', tipo=tipo, numeroIdentificacion=id)
-                ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}nombre', primerNombre=pn, segundoNombre=sn, primerApellido=pa, segundoApellido=sa)
+                ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}nombre', primerNombre=pa, segundoNombre=sa, primerApellido=pn, segundoApellido=sn)
 
             else:
                 ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}identificacion', tipo=tipo, numeroIdentificacion=id, digitoVerificacion=dv)
-                ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}nombre', primerNombre=pn, segundoNombre=sn, primerApellido=pa, segundoApellido=sa,Razonsocial=rs)
+                ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}nombre', primerNombre="", segundoNombre="", primerApellido="", segundoApellido="",Razonsocial=rs)
 
             ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}direccionCorrespondencia', direccion=dir, municipio=mun)
             ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}numeroTelefono', prefijo=pref, numero=num)
