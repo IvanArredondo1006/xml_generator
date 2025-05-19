@@ -204,8 +204,8 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['numero'] = df['TELEFONO'].astype(str)
     prueba2['valor'] = df['MONTO ACTIVOS'].astype(str)
     prueba2['fechaCorte'] = df['FECHA ACTIVOS'].apply(convertir_a_formato_yyyy_mm_dd)
-    df['fechaInicialEjecucion'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'], errors='coerce') - pd.Timedelta(days=180)
-    df['fechaFinalEjecucion'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'], errors='coerce') + pd.Timedelta(days=360)
+    df['fechaInicialEjecucion'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'], errors='coerce', dayfirst=True) - pd.Timedelta(days=180)
+    df['fechaFinalEjecucion'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'], errors='coerce',dayfirst=True) + pd.Timedelta(days=360)
 
     prueba2['fechaInicialEjecucion'] = df['fechaInicialEjecucion'].dt.strftime('%Y-%m-%d')
     prueba2['fechaFinalEjecucion'] = df['fechaFinalEjecucion'].dt.strftime('%Y-%m-%d')
@@ -496,7 +496,10 @@ def procesar_excel(tabla,num_operaciones,banco):
     
     # Crear el archivo ZIP en memoria
     zip_buffer = io.BytesIO()
-    zip_name = datetime.today().strftime("%d-%m-%Y") + ".zip"  # Nombre del ZIP
+    if banco == 'Banco AV Villas':
+        zip_name = fd + ".zip"  # Nombre del ZIP
+    else:
+        zip_name = datetime.today().strftime("%d-%m-%Y") + ".zip"  # Nombre del ZIP
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         zip_file.writestr(xml_filename, formatted_xml)
     
