@@ -53,14 +53,25 @@ def calcular_fecha_aplicabilidad(fecha_final):
     return fecha_final.strftime('%Y-%m-%d')
 
 def calcular_plazo_cuota(fecha_inicio, fecha_fin):
+    # Convertir explícitamente a datetime si viene como string
+    fecha_inicio = pd.to_datetime(fecha_inicio, errors='coerce', dayfirst=True)
+    fecha_fin = pd.to_datetime(fecha_fin, errors='coerce', dayfirst=True)
+
     if pd.isnull(fecha_inicio) or pd.isnull(fecha_fin):
-        return None
+        return 1  # para evitar errores por división entre None
+
     if fecha_inicio > fecha_fin:
-        return None
+        return 1
+
     delta = relativedelta(fecha_fin, fecha_inicio)
     meses = delta.years * 12 + delta.months
-    # Asegura que al menos devuelva 1 mes
+
+    if delta.days > 0 or fecha_inicio.day == fecha_fin.day:
+        meses += 1
+    print(meses)
     return max(meses, 1)
+
+
 
 
 
@@ -91,23 +102,25 @@ def macro_excel(archivo, banco):
     df['VALOR DESEMBOLSADO'] = np.ceil(df['VALOR DESEMBOLSADO'].astype(float)).astype(int)
     df['fechaDesembolso'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['fechaVencimientoFinal'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
-
+    df['fechaAplicacionHasta'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['plazoCredito'] = df.apply(lambda row: calcular_meses_completos_con_salto(row['fechaDesembolso'], row['fechaVencimientoFinal']), axis=1)
+    df['fechaAplicacionHasta'] = df['FECHA FINAL CREDITO'].apply(calcular_fecha_aplicabilidad)
+    df['fechaAplicacionHasta'] = pd.to_datetime(df['fechaAplicacionHasta'], errors='coerce')  # <- Asegurar tipo
 
     if banco == "Banco AV Villas":
         df['valorCuota1'] = df['saldoCapitalCredito']
-        df['valorCuota2'] = 0  # o puedes omitir este campo si no lo vas a usar
     else:
 
         df['valorCuota2'] = df.apply(
-            lambda row: np.floor(row['saldoCapitalCredito'] / calcular_plazo_cuota(row['fechaDesembolso'], row['fechaVencimientoFinal'])),
+            lambda row: np.floor(row['saldoCapitalCredito'] / calcular_plazo_cuota(row['fechaAplicacionHasta'], row['fechaVencimientoFinal'])),
             axis=1
         ).astype(int)
-        
+
         df['valorCuota1'] = df.apply(
-            lambda row: int(row['saldoCapitalCredito'] - row['valorCuota2'] * (calcular_plazo_cuota(row['fechaDesembolso'], row['fechaVencimientoFinal']) - 1)),
+            lambda row: int(row['saldoCapitalCredito'] - row['valorCuota2'] * (calcular_plazo_cuota(row['fechaAplicacionHasta'], row['fechaVencimientoFinal']) - 1)),
             axis=1
         )
+
 
     df['registro'] = '1'
     df['valorTotalCredito'] = df['saldoCapitalCredito'].astype(str)
