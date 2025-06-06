@@ -95,7 +95,7 @@ def format_xml(xml_str):
 def macro_excel(archivo, banco):
     col = ['IDENTIFICACION', 'NOMBRE COMPLETO', 'CODIGO MUN', 'MONTO INGRESOS', 'MONTO ACTIVOS',
            'VALOR DESEMBOLSADO', 'SALDO A CAPITAL DEL CREDITO', 'FECHA INICIAL DEL CREDITO', 'FECHA FINAL CREDITO',
-           'FECHA ACTIVOS', 'AMORTIZACION', 'TASA FINAL', 'DIRECCION', 'TELEFONO', 'PAGARE', 'TIPO PRODUCTOR','RUBRO','ACTIVIDAD','OFICINA','CORREO']
+           'FECHA ACTIVOS', 'AMORTIZACION', 'TASA FINAL', 'DIRECCION', 'TELEFONO', 'PAGARE', 'TIPO PRODUCTOR','RUBRO','ACTIVIDAD','OFICINA','CORREO','FECHA INGRESOS']
     
     df = pd.read_excel(archivo, names=col, header=0, dtype=str).fillna("")
     df['saldoCapitalCredito'] = np.ceil(df['SALDO A CAPITAL DEL CREDITO'].astype(float)).astype(int)
@@ -103,6 +103,7 @@ def macro_excel(archivo, banco):
     df['fechaDesembolso'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['fechaVencimientoFinal'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['fechaAplicacionHasta'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
+    df['FECHA INGRESOS'] = pd.to_datetime(df['FECHA INGRESOS'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['plazoCredito'] = df.apply(lambda row: calcular_meses_completos_con_salto(row['fechaDesembolso'], row['fechaVencimientoFinal']), axis=1)
     df['fechaAplicacionHasta'] = df['FECHA FINAL CREDITO'].apply(calcular_fecha_aplicabilidad)
     df['fechaAplicacionHasta'] = pd.to_datetime(df['fechaAplicacionHasta'], errors='coerce')  # <- Asegurar tipo
@@ -255,6 +256,7 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['numeroProyecto'] = ""
     prueba2['numeroDesembolso'] = ""
     prueba2['desembolsos'] = ""
+    prueba2['fechaingresos'] = df['FECHA INGRESOS'].apply(convertir_a_formato_yyyy_mm_dd)
 
     if banco != "Banco AV Villas":
         copia = prueba2.copy()
@@ -361,6 +363,8 @@ def procesar_excel(tabla,num_operaciones,banco):
         vai=tabla.iloc[i,57]
         #fci=tabla.iloc[i,58]
         pf=tabla.iloc[i,59] # La solicitud corresponde a  un proyecto financiado con varios desembolsos
+        fi=tabla.iloc[i,64]
+        print(fi)
 
 
         tc=str(tc)
@@ -424,6 +428,7 @@ def procesar_excel(tabla,num_operaciones,banco):
         pf=str(pf)
         vai=str(vai)
         #fci=str(fci)
+        fi=str(fi)
         
 
         if reg == str(1):
@@ -444,7 +449,7 @@ def procesar_excel(tabla,num_operaciones,banco):
             ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}direccionCorrespondencia', direccion=dir, municipio=mun)
             ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}numeroTelefono', prefijo=pref, numero=num)
             ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}valorActivos', valor=va, fechaCorte=fc, tipoDato="COP")
-            ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}valorIngresos', valor=vai, fechaCorte='2024-12-31', tipoDato="COP")
+            ET.SubElement(beneficiario,'{http://www.finagro.com.co/sit}valorIngresos', valor=vai, fechaCorte=fi, tipoDato="COP")
 
             if pf == str(1): #(nuevo)
                 proyecto=ET.SubElement(obligacion,'{http://www.finagro.com.co/sit}proyecto', fechaInicialEjecucion=fie, fechaFinalEjecucion=ffe)
