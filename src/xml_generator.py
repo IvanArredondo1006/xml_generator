@@ -68,7 +68,7 @@ def calcular_plazo_cuota(fecha_inicio, fecha_fin):
 
     if delta.days > 0 or fecha_inicio.day == fecha_fin.day:
         meses += 1
-    print(meses)
+
     return max(meses, 1)
 
 
@@ -154,7 +154,8 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['numeroPagare'] = df['PAGARE'].astype(str)
     prueba2['numeroObligacionIntermediario'] = df['PAGARE'].astype(str)
     prueba2['fechaSuscripcion'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
-    prueba2['fechaDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
+    prueba2['fechaDesembolso'] = datetime.today().strftime('%Y-%m-%d')
+    #prueba2['fechaDesembolso'] = pd.to_datetime('today').normalize()
     prueba2['oficinaPagare'] = df['OFICINA']
     prueba2['oficinaObligacion'] = df['OFICINA']
     if banco == 'Banco Santander':
@@ -364,7 +365,7 @@ def procesar_excel(tabla,num_operaciones,banco):
         #fci=tabla.iloc[i,58]
         pf=tabla.iloc[i,59] # La solicitud corresponde a  un proyecto financiado con varios desembolsos
         fi=tabla.iloc[i,64]
-        print(fi)
+    
 
 
         tc=str(tc)
