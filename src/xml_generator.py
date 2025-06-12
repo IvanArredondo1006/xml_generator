@@ -154,7 +154,7 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['numeroPagare'] = df['PAGARE'].astype(str)
     prueba2['numeroObligacionIntermediario'] = df['PAGARE'].astype(str)
     prueba2['fechaSuscripcion'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
-    if banco == "Banco AV Villas":
+    if banco == "Banco AV Villas" or banco == "Banco Caja social":
         prueba2['fechaDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
     else:
         prueba2['fechaDesembolso'] = datetime.today().strftime('%Y-%m-%d')
