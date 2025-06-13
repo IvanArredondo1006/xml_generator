@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import numpy as np
 from dateutil.relativedelta import relativedelta
+from calendar import monthrange
 
 # -------------------------------------
 # FUNCIONES AUXILIARES
@@ -29,18 +30,20 @@ def calcular_fecha_aplicabilidad(fecha_final):
     hoy = datetime.today()
     dia_final = fecha_final.day
 
+    # Ajustar el día si excede el número de días del mes actual
+    ultimo_dia_mes = monthrange(hoy.year, hoy.month)[1]
+    dia_final = min(dia_final, ultimo_dia_mes)
+
     base = datetime(hoy.year, hoy.month, dia_final)
     try:
         fecha_base = base.replace(month=hoy.month + 1)
     except ValueError:
-        # manejar caso en que mes + 1 = 13 (diciembre a enero)
         if hoy.month == 12:
             fecha_base = base.replace(year=hoy.year + 1, month=1)
         else:
             raise
 
     if fecha_base < hoy + pd.Timedelta(days=30):
-        # mover a dos meses en adelante
         if fecha_base.month == 12:
             fecha_final = fecha_base.replace(year=fecha_base.year + 1, month=2)
         elif fecha_base.month == 11:
@@ -105,6 +108,7 @@ def macro_excel(archivo, banco):
     df['fechaAplicacionHasta'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['FECHA INGRESOS'] = pd.to_datetime(df['FECHA INGRESOS'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['plazoCredito'] = df.apply(lambda row: calcular_meses_completos_con_salto(row['fechaDesembolso'], row['fechaVencimientoFinal']), axis=1)
+    print(df['FECHA FINAL CREDITO'])
     df['fechaAplicacionHasta'] = df['FECHA FINAL CREDITO'].apply(calcular_fecha_aplicabilidad)
     df['fechaAplicacionHasta'] = pd.to_datetime(df['fechaAplicacionHasta'], errors='coerce')  # <- Asegurar tipo
 
