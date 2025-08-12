@@ -79,13 +79,22 @@ def calcular_plazo_cuota(fecha_inicio, fecha_fin):
 
 
 def calcular_meses_completos_con_salto(fecha_inicial, fecha_final):
-    if pd.isnull(fecha_inicial) or pd.isnull(fecha_final):
+    fi = pd.to_datetime(fecha_inicial, errors='coerce', dayfirst=True)
+    ff = pd.to_datetime(fecha_final, errors='coerce', dayfirst=True)
+    print(fi,ff)
+
+    if pd.isnull(fi) or pd.isnull(ff) or fi > ff:
         return 0
-    rd = relativedelta(fecha_final, fecha_inicial)
-    meses = rd.years * 12 + rd.months
-    if rd.days > 0:
+
+    delta = relativedelta(ff, fi)
+    print(f'relative delta{delta}')
+    meses = delta.years * 12 + delta.months
+    
+    # Regla específica: solo sumar si el día final es mayor al inicial
+    if delta.days >=1:
         meses += 1
-    return meses
+    
+    return max(meses, 1)  # Mínimo 1 mes
 
 
 def format_xml(xml_str):
@@ -103,12 +112,11 @@ def macro_excel(archivo, banco):
     df = pd.read_excel(archivo, names=col, header=0, dtype=str).fillna("")
     df['saldoCapitalCredito'] = np.ceil(df['SALDO A CAPITAL DEL CREDITO'].astype(float)).astype(int)
     df['VALOR DESEMBOLSADO'] = np.ceil(df['VALOR DESEMBOLSADO'].astype(float)).astype(int)
-    df['fechaDesembolso'] = pd.to_datetime(df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
+    df['fechaDesembolso'] = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
     df['fechaVencimientoFinal'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['fechaAplicacionHasta'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['FECHA INGRESOS'] = pd.to_datetime(df['FECHA INGRESOS'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['plazoCredito'] = df.apply(lambda row: calcular_meses_completos_con_salto(row['fechaDesembolso'], row['fechaVencimientoFinal']), axis=1)
-    print(df['FECHA FINAL CREDITO'])
     df['fechaAplicacionHasta'] = df['FECHA FINAL CREDITO'].apply(calcular_fecha_aplicabilidad)
     df['fechaAplicacionHasta'] = pd.to_datetime(df['fechaAplicacionHasta'], errors='coerce')  # <- Asegurar tipo
 
