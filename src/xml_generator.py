@@ -76,18 +76,16 @@ def calcular_plazo_cuota(fecha_inicio, fecha_fin):
 
 
 
-
-
 def calcular_meses_completos_con_salto(fecha_inicial, fecha_final):
     fi = pd.to_datetime(fecha_inicial, errors='coerce', dayfirst=True)
     ff = pd.to_datetime(fecha_final, errors='coerce', dayfirst=True)
-    print(fi,ff)
+    #print(fi,ff)
 
     if pd.isnull(fi) or pd.isnull(ff) or fi > ff:
         return 0
 
     delta = relativedelta(ff, fi)
-    print(f'relative delta{delta}')
+    #print(f'relative delta{delta}')
     meses = delta.years * 12 + delta.months
     
     # Regla específica: solo sumar si el día final es mayor al inicial
@@ -113,9 +111,9 @@ def macro_excel(archivo, banco):
     df['saldoCapitalCredito'] = np.ceil(df['SALDO A CAPITAL DEL CREDITO'].astype(float)).astype(int)
     df['VALOR DESEMBOLSADO'] = np.ceil(df['VALOR DESEMBOLSADO'].astype(float)).astype(int)
     if banco == "Banco AV Villas" or banco == "Banco Caja social":
-        prueba2['fechaDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
+        df['fechaDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
     else:
-        prueba2['fechaDesembolso'] = datetime.today().strftime('%Y-%m-%d')
+        df['fechaDesembolso'] = datetime.today().strftime('%Y-%m-%d')
     df['fechaVencimientoFinal'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['fechaAplicacionHasta'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['FECHA INGRESOS'] = pd.to_datetime(df['FECHA INGRESOS'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
