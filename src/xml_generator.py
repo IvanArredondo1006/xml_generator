@@ -112,7 +112,10 @@ def macro_excel(archivo, banco):
     df = pd.read_excel(archivo, names=col, header=0, dtype=str).fillna("")
     df['saldoCapitalCredito'] = np.ceil(df['SALDO A CAPITAL DEL CREDITO'].astype(float)).astype(int)
     df['VALOR DESEMBOLSADO'] = np.ceil(df['VALOR DESEMBOLSADO'].astype(float)).astype(int)
-    df['fechaDesembolso'] = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
+    if banco == "Banco AV Villas" or banco == "Banco Caja social":
+        prueba2['fechaDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
+    else:
+        prueba2['fechaDesembolso'] = datetime.today().strftime('%Y-%m-%d')
     df['fechaVencimientoFinal'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['fechaAplicacionHasta'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['FECHA INGRESOS'] = pd.to_datetime(df['FECHA INGRESOS'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
