@@ -57,8 +57,8 @@ def calcular_fecha_aplicabilidad(fecha_final):
 
 def calcular_plazo_cuota(fecha_inicio, fecha_fin):
     # Convertir explícitamente a datetime si viene como string
-    fecha_inicio = pd.to_datetime(fecha_inicio, errors='coerce', dayfirst=True)
-    fecha_fin = pd.to_datetime(fecha_fin, errors='coerce', dayfirst=True)
+    fecha_inicio = pd.to_datetime(fecha_inicio, errors='coerce')
+    fecha_fin = pd.to_datetime(fecha_fin, errors='coerce')
 
     if pd.isnull(fecha_inicio) or pd.isnull(fecha_fin):
         return 1  # para evitar errores por división entre None
@@ -77,9 +77,9 @@ def calcular_plazo_cuota(fecha_inicio, fecha_fin):
 
 
 def calcular_meses_completos_con_salto(fecha_inicial, fecha_final):
-    fi = pd.to_datetime(fecha_inicial, errors='coerce', dayfirst=True)
-    ff = pd.to_datetime(fecha_final, errors='coerce', dayfirst=True)
-    #print(fi,ff)
+    fi = pd.to_datetime(fecha_inicial, errors='coerce')
+    ff = pd.to_datetime(fecha_final, errors='coerce')
+    print(fi,ff)
 
     if pd.isnull(fi) or pd.isnull(ff) or fi > ff:
         return 0
@@ -92,6 +92,7 @@ def calcular_meses_completos_con_salto(fecha_inicial, fecha_final):
     if delta.days >=1:
         meses += 1
     
+    print(meses)
     return max(meses, 1)  # Mínimo 1 mes
 
 
@@ -113,7 +114,7 @@ def macro_excel(archivo, banco):
     if banco == "Banco AV Villas" or banco == "Banco Caja social":
         df['fechaDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
     else:
-        df['fechaDesembolso'] = datetime.today().strftime('%Y-%m-%d')
+        df['fechaDesembolso'] = pd.Timestamp.today().normalize()
     df['fechaVencimientoFinal'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['fechaAplicacionHasta'] = pd.to_datetime(df['FECHA FINAL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
     df['FECHA INGRESOS'] = pd.to_datetime(df['FECHA INGRESOS'].apply(convertir_a_formato_yyyy_mm_dd), errors='coerce')
@@ -168,7 +169,7 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['numeroObligacionIntermediario'] = df['PAGARE'].astype(str)
     prueba2['fechaSuscripcion'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
     if banco == "Banco AV Villas" or banco == "Banco Caja social":
-        prueba2['fechaDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
+        prueba2['fech   aDesembolso'] = df['FECHA INICIAL DEL CREDITO'].apply(convertir_a_formato_yyyy_mm_dd)
     else:
         prueba2['fechaDesembolso'] = datetime.today().strftime('%Y-%m-%d')
     #prueba2['fechaDesembolso'] = pd.to_datetime('today').normalize()
