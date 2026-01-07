@@ -44,13 +44,29 @@ Link de ingreso xmlgenerator-production.up.railway.app
 
 El archivo Excel debe contener las siguientes columnas con los nombres correspondientes:
 
-| Columna                      | Descripción                           |
-|------------------------------|---------------------------------------|
-| tipoCartera                  | Tipo de cartera                      |
-| programaCredito              | Programa de crédito                  |
-| tipoOperacion                | Tipo de operación                    |
-| fechaSuscripcion             | Fecha de suscripción                 |
-| ...                          | Otras columnas requeridas            |
+| Columna                      | Descripción                                                                 |
+|------------------------------|-----------------------------------------------------------------------------|
+| IDENTIFICACION               | Número de identificación del beneficiario (cédula o NIT según aplique).    |
+| NOMBRE COMPLETO              | Nombre completo o razón social del beneficiario.                           |
+| CODIGO MUN                   | Código del municipio (DANE u otro código definido por el proceso).         |
+| MONTO INGRESOS               | Valor de los ingresos reportados (COP).                                    |
+| MONTO ACTIVOS                | Valor de los activos reportados (COP).                                     |
+| VALOR DESEMBOLSADO           | Valor desembolsado del crédito (COP).                                      |
+| SALDO A CAPITAL DEL CREDITO  | Saldo a capital del crédito (COP).                                         |
+| FECHA INICIAL DEL CREDITO    | Fecha de inicio o desembolso del crédito.                                  |
+| FECHA FINAL CREDITO          | Fecha de vencimiento final del crédito.                                    |
+| FECHA ACTIVOS                | Fecha de corte de los activos.                                             |
+| AMORTIZACION                 | Tipo o forma de amortización del crédito.                                  |
+| TASA FINAL                   | Tasa final aplicada al crédito.                                            |
+| DIRECCION                    | Dirección del beneficiario.                                                |
+| TELEFONO                     | Número telefónico del beneficiario.                                        |
+| PAGARE                       | Número de pagaré u obligación.                                             |
+| TIPO PRODUCTOR               | Clasificación del productor según catálogo aplicable.                      |
+| RUBRO                        | Código del rubro o destino del crédito.                                    |
+| ACTIVIDAD                    | Código o descripción de la actividad económica.                            |
+| OFICINA                      | Código o nombre de la oficina del intermediario financiero.                |
+| CORREO                       | Correo electrónico del beneficiario.                                       |
+| FECHA INGRESOS               | Fecha de corte de los ingresos (si aplica).                                |
 
 Consulta el código fuente para obtener el listado completo de columnas.
 
@@ -60,17 +76,15 @@ Consulta el código fuente para obtener el listado completo de columnas.
    - Entra al enlace https://xmlgenerator-megag.streamlit.app/
 
 2. **Ejecutar el script:**
-   - Sube el excel con la pl
-     ```bash
-     python script.py
-     ```
+   - En número de operaciones escribe el total de las operaciones de la carga masiva
+   - Selecciona el banco 
+   - Sube el excel con la plantilla que tiene el usuario Laura Fuquen
+   
 
 3. **Resultado:**
-   - Los archivos XML generados estarán en una carpeta dentro de `./data/` con el nombre basado en la fecha actual.
-   - Un archivo comprimido en formato ZIP también se generará en la misma ubicación.
+   - Tendrás una vista previa en formato tabla de la carga masiva con toda la información y la opción para descargarla en formato excel y validarla
+   - Se te descargará la carga masiva en formato .zip lista para ser subida a Agros
 
-4. **Opcional: Formatear XML manualmente**
-   - Usa la función `format_xml` para formatear archivos XML existentes.
 
 ## Estructura del XML generado
 
