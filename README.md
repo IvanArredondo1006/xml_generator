@@ -57,10 +57,10 @@ Consulta el código fuente para obtener el listado completo de columnas.
 ## Uso
 
 1. **Preparar los datos:**
-   - Coloca el archivo Excel en la carpeta `data` y nómbralo como `Prueba2.xlsx`.
+   - Entra al enlace https://xmlgenerator-megag.streamlit.app/
 
 2. **Ejecutar el script:**
-   - Corre el archivo principal con:
+   - Sube el excel con la pl
      ```bash
      python script.py
      ```
