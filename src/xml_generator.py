@@ -31,30 +31,36 @@ def calcular_fecha_aplicabilidad(fecha_final):
     dia_final = fecha_final.day
 
     # Ajustar el día si excede el número de días del mes actual
-    ultimo_dia_mes = monthrange(hoy.year, hoy.month)[1]
-    dia_final = min(dia_final, ultimo_dia_mes)
+    ultimo_dia_mes_actual = monthrange(hoy.year, hoy.month)[1]
+    dia_final = min(dia_final, ultimo_dia_mes_actual)
 
     base = datetime(hoy.year, hoy.month, dia_final)
 
-    try:
-        if banco == "Banco Santander":
-            diferencia = (base.date() - hoy.date()).days
+    def sumar_un_mes_seguro(dt: datetime) -> datetime:
+        year = dt.year
+        month = dt.month + 1
+        if month == 13:
+            month = 1
+            year += 1
 
-            if diferencia <= 7:   # incluye negativos y 0..7
-                base = base.replace(month=hoy.month + 1)
-                fecha_final = base
-            else:
-                fecha_final = base
-        else:
-            base = base.replace(month=hoy.month + 1)
-            fecha_final = base
+        ultimo_dia_mes_destino = monthrange(year, month)[1]
+        day = min(dt.day, ultimo_dia_mes_destino)
 
-    except ValueError:
-        if hoy.month == 12:
-            base = base.replace(year=hoy.year + 1, month=1)
-            fecha_final = base
+        return datetime(year, month, day)
+
+    if banco == "Banco Santander":
+        diferencia = (base.date() - hoy.date()).days
+
+        # Si ya pasó o está dentro de los próximos 7 días, manda al siguiente mes
+        if diferencia <= 7:  # incluye negativos y 0..7
+            fecha_final = sumar_un_mes_seguro(base)
         else:
-            raise
+            fecha_final = base
+    else:
+        # Para otros bancos: siempre manda al siguiente mes (sin romper por febrero / días inválidos)
+        fecha_final = sumar_un_mes_seguro(base)
+
+    return fecha_final.strftime('%Y-%m-%d')
 
     
     # if fecha_base < hoy + pd.Timedelta(days=30):
