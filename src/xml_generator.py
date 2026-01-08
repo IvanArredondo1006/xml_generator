@@ -276,7 +276,11 @@ def transformar_a_estructura_xml(df, banco):
     prueba2['periodicidadIntereses'] = "PE"
     prueba2['periodicidadCapital'] = "PE"
     prueba2['tasaBaseBeneficiario'] = "5"
-    prueba2['margenTasaBeneficiario'] = df['TASA FINAL'].astype(str)
+    prueba2['margenTasaBeneficiario'] = (
+        pd.to_numeric(df['TASA FINAL'], errors='coerce')
+        .fillna(0)
+        .map(lambda x: f"{x:.3f}")
+    )
     prueba2['valorCuotaCapital'] = df['valorCuota1'].astype(str)
     prueba2['porcentajeCapitalizacionIntereses'] = "0"
     prueba2['margenTasaRedescuento'] = "0"
