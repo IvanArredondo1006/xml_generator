@@ -35,23 +35,37 @@ def calcular_fecha_aplicabilidad(fecha_final):
     dia_final = min(dia_final, ultimo_dia_mes)
 
     base = datetime(hoy.year, hoy.month, dia_final)
+
     try:
-        fecha_base = base.replace(month=hoy.month + 1)
+        if banco == "Banco Santander":
+            diferencia = (base.date() - hoy.date()).days
+
+            if diferencia <= 7:   # incluye negativos y 0..7
+                base = base.replace(month=hoy.month + 1)
+                fecha_final = base
+            else:
+                fecha_final = base
+        else:
+            base = base.replace(month=hoy.month + 1)
+            fecha_final = base
+
     except ValueError:
         if hoy.month == 12:
-            fecha_base = base.replace(year=hoy.year + 1, month=1)
+            base = base.replace(year=hoy.year + 1, month=1)
+            fecha_final = base
         else:
             raise
 
-    if fecha_base < hoy + pd.Timedelta(days=30):
-        if fecha_base.month == 12:
-            fecha_final = fecha_base.replace(year=fecha_base.year + 1, month=2)
-        elif fecha_base.month == 11:
-            fecha_final = fecha_base.replace(year=fecha_base.year + 1, month=1)
-        else:
-            fecha_final = fecha_base.replace(month=fecha_base.month + 1)
-    else:
-        fecha_final = fecha_base
+    
+    # if fecha_base < hoy + pd.Timedelta(days=30):
+    #     if fecha_base.month == 12:
+    #         fecha_final = fecha_base.replace(year=fecha_base.year + 1, month=2)
+    #     # elif fecha_base.month == 11:
+    #     #     fecha_final = fecha_base.replace(year=fecha_base.year + 1, month=1)
+    #     else:
+    #         fecha_final = fecha_base.replace(month=fecha_base.month + 1)
+    # else:
+    #     fecha_final = fecha_base
 
     return fecha_final.strftime('%Y-%m-%d')
 
@@ -79,7 +93,7 @@ def calcular_plazo_cuota(fecha_inicio, fecha_fin):
 def calcular_meses_completos_con_salto(fecha_inicial, fecha_final):
     fi = pd.to_datetime(fecha_inicial, errors='coerce')
     ff = pd.to_datetime(fecha_final, errors='coerce')
-    print(fi,ff)
+
 
     if pd.isnull(fi) or pd.isnull(ff) or fi > ff:
         return 0
@@ -91,8 +105,7 @@ def calcular_meses_completos_con_salto(fecha_inicial, fecha_final):
     # Regla específica: solo sumar si el día final es mayor al inicial
     if delta.days >=1:
         meses += 1
-    
-    print(meses)
+
     return max(meses, 1)  # Mínimo 1 mes
 
 
